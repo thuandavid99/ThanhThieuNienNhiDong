@@ -11,7 +11,7 @@ function callGroq(userMessage, customSystemPrompt) {
     const systemPrompt = customSystemPrompt || `Bạn là "Sử Thần AI" — trợ lý học tập Lịch sử Việt Nam của Việt Sử Quest, dành cho học sinh lớp 6-12 theo sách Kết nối tri thức. Trả lời bằng tiếng Việt, ngắn gọn dưới 250 từ, dùng emoji và bullet points. Phong cách thân thiện, dễ hiểu.`;
 
     const bodyData = JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
