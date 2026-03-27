@@ -1,5 +1,5 @@
 module.exports = {
-  brand: { name: 'Tram Su Meta', tagline: 'Nền tảng học Lịch sử Việt Nam bằng trải nghiệm' },
+  brand: { name: 'Trạm Sử Meta', tagline: 'Nền tảng học Lịch sử Việt Nam bằng trải nghiệm' },
   hero: {
     title: 'Nền tảng học Lịch sử đa trải nghiệm',
     subtitle: 'Học theo lớp 6-12, luyện quiz, chơi game lịch sử, khám phá bản đồ sự kiện và hỏi đáp cùng trợ lý AI trên một giao diện hiện đại.',
