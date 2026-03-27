@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <%- include('partials/head', { pageTitle, siteName }) %>
+  <body>
+    <%- include('partials/header', { brand: data.brand }) %>
+    <main>
+
+      <section class="hero-section hero-history-bg">
+        <div class="container hero-grid">
+          <div class="hero-copy reveal">
+            <div class="hero-eyebrow-wrap"><span class="eyebrow-dot"></span><p class="eyebrow">Nền tảng học sử bằng trải nghiệm</p></div>
+            <h1><%= data.hero.title %></h1>
+            <p class="hero-text"><%= data.hero.subtitle %></p>
+            <div class="hero-actions">
+              <a href="#courses" class="button button-primary pulse-glow"><%= data.hero.primaryAction %> →</a>
+              <a href="#games" class="button button-secondary">🎮 <%= data.hero.secondaryAction %></a>
+            </div>
+            <div class="hero-tags">
+              <span>📚 Lớp 6-12</span><span>🎮 Mini game</span><span>🗺️ Bản đồ</span><span>🤖 AI demo</span>
+            </div>
+          </div>
+          <div class="hero-visual reveal" style="transition-delay:.15s">
+            <div class="hero-panel main-panel">
+              <div class="panel-top">
+                <span class="panel-pill">🏆 Việt Sử Quest</span>
+                <span class="panel-note">Platform EdTech</span>
+              </div>
+              <h3>Học Sử theo cách mới</h3>
+              <p>Học theo lớp, theo thời kỳ và theo phương pháp phù hợp với học sinh THCS - THPT.</p>
+              <div class="hero-mini-grid">
+                <div><strong data-val="7">7</strong><span>khóa học</span></div>
+                <div><strong data-val="40">40+</strong><span>game & quiz</span></div>
+                <div><strong data-val="120">120+</strong><span>tài liệu</span></div>
+                <div><strong>24/7</strong><span>AI demo</span></div>
+              </div>
+            </div>
+            <div class="floating-card card-a"><span class="floating-icon">⭐</span><div><strong>Timeline</strong><small>Học theo mốc</small></div></div>
+            <div class="floating-card card-b"><span class="floating-icon">🗺️</span><div><strong>Bản đồ</strong><small>Gắn địa danh</small></div></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Trust ticker -->
+      <div class="trust-ticker" aria-hidden="true">
+        <div class="trust-ticker-inner">
+          &nbsp;⭐ Việt Sử Quest &nbsp;·&nbsp; 🎮 3 game lịch sử đang hoạt động &nbsp;·&nbsp; 📚 7 khóa học lớp 6-12 &nbsp;·&nbsp; 🃏 Flashcard kiểu Quizlet &nbsp;·&nbsp; 🗺️ Bản đồ tương tác &nbsp;·&nbsp; 🤖 Chatbot AI hỗ trợ 24/7 &nbsp;·&nbsp; 🇻🇳 Lịch sử Việt Nam sinh động &nbsp;·&nbsp; ⭐ Việt Sử Quest &nbsp;·&nbsp; 🎮 3 game lịch sử đang hoạt động &nbsp;·&nbsp; 📚 7 khóa học lớp 6-12 &nbsp;·&nbsp; 🃏 Flashcard kiểu Quizlet &nbsp;·&nbsp; 🗺️ Bản đồ tương tác &nbsp;·&nbsp; 🤖 Chatbot AI hỗ trợ 24/7 &nbsp;·&nbsp; 🇻🇳 Lịch sử Việt Nam sinh động &nbsp;&nbsp;
+        </div>
+      </div>
+
+      <section class="highlights-section">
+        <div class="container">
+          <div class="cards-grid four-col">
+            <% data.highlights.forEach((item, i) => { %>
+              <article class="info-card reveal" style="transition-delay:<%=i*0.07%>s">
+                <span class="card-icon"><%= item.icon %></span>
+                <h3><%= item.title %></h3>
+                <p><%= item.description %></p>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="courses" class="section">
+        <div class="container">
+          <div class="section-head reveal">
+            <div><p class="eyebrow">Khóa học theo lớp</p><h2>Lịch sử <span style="color:#ff7a1a">6</span> – Kết nối tri thức</h2></div>
+            <p class="section-note">5 chương · 20 bài học · Sơ đồ tư duy tương tác cho từng bài.</p>
+          </div>
+
+          <style>
+            .chapter-cards-grid {
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              gap: 1.25rem;
+              margin-bottom: 1.75rem;
+            }
+            @media (max-width: 900px) { .chapter-cards-grid { grid-template-columns: repeat(3, 1fr); } }
+            @media (max-width: 600px) { .chapter-cards-grid { grid-template-columns: repeat(2, 1fr); } }
+
+            .chapter-card {
+              position: relative;
+              border-radius: 20px;
+              overflow: hidden;
+              cursor: pointer;
+              transition: transform .22s, box-shadow .22s;
+              aspect-ratio: 3/4;
+              min-height: 220px;
+              box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            }
+            .chapter-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
+            .chapter-card.active { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+
+            /* Màu nền mỗi chương */
+            .chapter-card:nth-child(1) { background: linear-gradient(145deg, #2d6a4f, #52b788); }
+            .chapter-card:nth-child(2) { background: linear-gradient(145deg, #1d3557, #457b9d); }
+            .chapter-card:nth-child(3) { background: linear-gradient(145deg, #7b2d00, #c1440e); }
+            .chapter-card:nth-child(4) { background: linear-gradient(145deg, #5c4a00, #c9a227); }
+            .chapter-card:nth-child(5) { background: linear-gradient(145deg, #6b0000, #c1121f); }
+
+            /* Ảnh minh họa góc phải dưới */
+            .chapter-card-img {
+              position: absolute;
+              bottom: 0; right: 0;
+              width: 100%;
+              height: 50%;
+              object-fit: cover;
+              object-position: center top;
+              opacity: .95;
+              border-radius: 0 0 20px 20px;
+              mask-image: linear-gradient(to bottom, transparent 0%, black 60%);
+              -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 60%);
+              transition: transform .3s;
+            }
+            .chapter-card:hover .chapter-card-img { transform: scale(1.05) translateY(-4px); }
+
+            /* Overlay gradient để chữ dễ đọc */
+            .chapter-card-overlay {
+              position: absolute; inset: 0;
+              background: linear-gradient(135deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+            }
+
+            /* Họa tiết nền */
+            .chapter-card::before {
+              content: '';
+              position: absolute; inset: 0;
+              background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+              background-size: 18px 18px;
+              pointer-events: none;
+            }
+
+            /* Active border glow */
+            .chapter-card.active::after {
+              content: '';
+              position: absolute; inset: 0;
+              border-radius: 20px;
+              border: 3px solid rgba(255,255,255,0.6);
+              pointer-events: none;
+            }
+
+            /* Nội dung text */
+            .chapter-card-content {
+              position: absolute;
+              top: 0; left: 0;
+              padding: 1.1rem 1rem;
+              z-index: 2;
+            }
+            .chapter-card-content .ch-num {
+              font-size: .65rem; font-weight: 800;
+              letter-spacing: .12em; text-transform: uppercase;
+              color: rgba(255,255,255,0.75);
+              margin-bottom: .3rem;
+              display: block;
+            }
+            .chapter-card-content .ch-title {
+              font-size: .88rem; font-weight: 800;
+              color: #fff; line-height: 1.35;
+              margin-bottom: .6rem;
+              text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            }
+            .chapter-card-content .ch-count {
+              display: inline-block;
+              font-size: .72rem; font-weight: 700;
+              color: #fff;
+              background: rgba(255,255,255,0.2);
+              backdrop-filter: blur(4px);
+              padding: .2rem .6rem;
+              border-radius: 99px;
+              border: 1px solid rgba(255,255,255,0.3);
+            }
+
+            /* Panel bài học */
+            .chapter-lessons-panel { display:none; background:#fff; border:2px solid #ff7a1a; border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; animation:slideDown .22s ease; }
+            .chapter-lessons-panel.active { display:block; }
+            @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+            .panel-header { display:flex; align-items:center; gap:.85rem; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1.5px solid #f0e8e0; }
+            .panel-header-img { width:48px; height:48px; object-fit:cover; border-radius:10px; }
+            .panel-title { font-size:1.05rem; font-weight:800; color:#1a1a1a; margin:0; }
+            .panel-sub { font-size:.8rem; color:#999; margin:.2rem 0 0; }
+            .lesson-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:.5rem; }
+            .lesson-item { display:flex; align-items:center; gap:.75rem; padding:.65rem .9rem; border-radius:10px; border:1.5px solid #f0e8e0; background:#fafaf8; text-decoration:none; color:#1a1a1a; transition:all .15s; }
+            .lesson-item:hover { border-color:#ff7a1a; background:#fff8f3; transform:translateX(3px); }
+            .lesson-item-num { width:30px; height:30px; border-radius:8px; background:#fff4ec; color:#ff7a1a; font-weight:800; font-size:.8rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+            .lesson-item-title { flex:1; font-size:.88rem; font-weight:500; }
+            .lesson-item:hover .lesson-item-title { color:#ff7a1a; }
+          </style>
+
+          <%
+            const chapterImages = [
+              { src: '/images/chapters/chuong1.png' },
+              { src: '/images/chapters/chuong2.png' },
+              { src: '/images/chapters/chuong3.jpg' },
+              { src: '/images/chapters/chuong4.jpg' },
+              { src: '/images/chapters/chuong5.jpg' }
+            ];
+          %>
+
+          <div class="chapter-cards-grid reveal">
+            <% data.lop6Chapters.forEach(function(ch, i) { %>
+            <div class="chapter-card" onclick="toggleChapter('<%= ch.id %>', this)">
+              <div class="chapter-card-overlay"></div>
+              <img class="chapter-card-img"
+                   src="<%= chapterImages[i].src %>"
+                   alt="Chương <%= ch.number %>"
+                   onerror="this.style.display='none'">
+              <div class="chapter-card-content">
+                <span class="ch-num">Chương <%= ch.number %></span>
+                <div class="ch-title"><%= ch.title %></div>
+                <span class="ch-count"><%= ch.lessons.length %> bài học</span>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+
+          <% data.lop6Chapters.forEach(function(ch, i) { %>
+          <div class="chapter-lessons-panel" id="panel-<%= ch.id %>">
+            <div class="panel-header">
+              <img class="panel-header-img" src="<%= chapterImages[i].src %>" alt="" onerror="this.style.display='none'">
+              <div>
+                <div class="panel-title"><%= ch.title %></div>
+                <div class="panel-sub">Chương <%= ch.number %> · <%= ch.lessons.length %> bài học</div>
+              </div>
+            </div>
+            <div class="lesson-list">
+              <% ch.lessons.forEach(function(lesson) { %>
+              <a href="/lop6#lesson-<%= lesson.id %>" class="lesson-item">
+                <div class="lesson-item-num">B<%= lesson.number %></div>
+                <div class="lesson-item-title">Bài <%= lesson.number %>. <%= lesson.title %></div>
+              </a>
+              <% }) %>
+            </div>
+          </div>
+          <% }) %>
+
+        </div>
+          </div>
+        </div>
+      </section>
+
+
+
+      <section id="methods" class="section section-soft">
+        <div class="container">
+          <div class="section-head centered reveal">
+            <p class="eyebrow">Phương pháp học môn Lịch sử</p>
+            <h2>Hiểu – Xâu chuỗi – Ghi nhớ – Luyện tập</h2>
+            <p class="section-note center-note">Không chỉ có nội dung — còn dạy học sinh cách học Sử sao cho nhớ lâu và bớt chán.</p>
+          </div>
+          <div class="method-steps">
+            <% data.methods.forEach((method, index) => { %>
+              <article class="step-card step-<%= index + 1 %> reveal" style="transition-delay:<%=index*0.1%>s">
+                <p class="step-label"><%= method.step %></p>
+                <h3><%= method.title %></h3>
+                <p><%= method.description %></p>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container timeline-wrapper">
+          <div class="section-head reveal">
+            <div><p class="eyebrow">Học theo dòng thời gian</p><h2>Trục timeline dễ nhớ, dễ liên kết</h2></div>
+            <a href="#chatbot" class="text-link">Nhờ AI tóm tắt</a>
+          </div>
+          <p class="timeline-hint reveal" style="transition-delay:.1s">👆 Click vào mỗi mốc để xem chi tiết</p>
+          <div class="timeline-row">
+            <% data.timeline.forEach((item, i) => { %>
+              <article class="timeline-card reveal" style="transition-delay:<%=i*0.06%>s">
+                <div class="tl-icon"><%= item.icon %></div>
+                <span class="timeline-year"><%= item.year %></span>
+                <h3><%= item.title %></h3>
+                <p class="tl-desc"><%= item.description %></p>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="games" class="section section-soft">
+        <div class="container">
+          <div class="section-head reveal">
+            <div><p class="eyebrow">Trung tâm trò chơi</p><h2>Game lịch sử để học sinh vừa chơi vừa nhớ bài</h2></div>
+            <p class="section-note">Mỗi trò chơi gắn với bài học và mốc thời gian cụ thể.</p>
+          </div>
+          <div class="cards-grid four-col">
+            <% data.games.forEach((game, i) => { %>
+              <article class="game-card <%= game.href ? 'game-card--live' : '' %> reveal" style="transition-delay:<%=i*0.08%>s">
+                <div class="game-card-top">
+                  <span class="pill"><%= game.type %></span>
+                  <% if (game.badge) { %><span class="pill pill-badge <%= game.badge==='SẮP RA'?'pill-soon':'' %>"><%= game.badge %></span><% } %>
+                </div>
+                <div class="game-emoji"><%= game.emoji %></div>
+                <h3><%= game.name %></h3>
+                <p><%= game.description %></p>
+                <div class="game-detail"><small><%= game.detail %></small></div>
+                <% if (game.href) { %>
+                  <a href="<%= game.href %>" class="button button-primary small-button game-play-btn">▶ Chơi ngay</a>
+                <% } else { %>
+                  <button class="button button-secondary small-button" style="opacity:.52;cursor:not-allowed" onclick="showToast('🕐 Game này sắp ra mắt! Hãy chờ nhé.')">Sắp ra mắt</button>
+                <% } %>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="map" class="section">
+        <div class="container map-layout">
+          <div class="reveal">
+            <p class="eyebrow">Bản đồ lịch sử Việt Nam</p>
+            <h2>Gắn địa danh với sự kiện để học trực quan hơn</h2>
+            <p class="section-note narrow-note">Click vào điểm đỏ trên bản đồ hoặc thẻ bên dưới để xem sự kiện.</p>
+            <div class="map-spots">
+              <% data.mapSpots.forEach((spot) => { %>
+                <article class="spot-card" style="cursor:pointer" onclick="document.querySelector('.map-dot[data-id=\'<%= spot.title %>\']')?.click()">
+                  <span class="spot-region" style="background:<%=spot.color%>22;color:<%=spot.color%>"><%= spot.region %></span>
+                  <h3><%= spot.title %></h3>
+                  <p class="spot-period"><%= spot.period %></p>
+                  <p><%= spot.note %></p>
+                </article>
+              <% }) %>
+            </div>
+          </div>
+
+          <div class="map-card reveal" style="transition-delay:.15s">
+            <div class="map-card-top">
+              <span class="panel-pill">Khám phá</span>
+              <span class="panel-note">👆 Click điểm màu</span>
+            </div>
+            <div class="map-visual" aria-label="Bản đồ Việt Nam">
+              <div style="position:relative; width:100%;">
+  <img 
+    src="/images/ban-do-lich-su.jpg" 
+    alt="Bản đồ lịch sử Việt Nam"
+    style="width:100%; border-radius:16px; display:block;"
+  />
+  <% data.mapSpots.forEach((spot) => { %>
+    <div class="map-dot-custom"
+      style="top:<%= spot.cy/5 %>%; left:<%= spot.cx/2.2 %>%"
+      onclick='showMapSpot(<%- JSON.stringify({title:spot.title,region:spot.region,period:spot.period,note:spot.note,events:spot.events}) %>)'>
+      <div class="mdc-ring" style="background:<%= spot.color %>"></div>
+      <div class="mdc-label"><%= spot.title %></div>
+    </div>
+  <% }) %>
+</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="resources" class="section section-soft">
+        <div class="container">
+          <div class="section-head reveal">
+            <div><p class="eyebrow">Thư viện tài liệu</p><h2>Tài liệu để học sinh tự ôn tập tốt hơn</h2></div>
+            <button class="text-link text-link-btn" onclick="showToast('📚 Thư viện đầy đủ sắp ra mắt! Theo dõi để nhận thông báo.')">Xem toàn bộ →</button>
+          </div>
+          <div class="cards-grid four-col">
+            <% data.resources.forEach((item, i) => { %>
+              <article class="resource-card reveal" style="transition-delay:<%=i*0.08%>s"
+                data-resource="<%- JSON.stringify(item).replace(/"/g,'&quot;') %>">
+                <div class="resource-meta">
+                  <span class="pill"><%= item.type %></span>
+                  <span class="resource-grade">Lớp <%= item.grade %></span>
+                </div>
+                <div class="resource-icon-big"><%= item.icon %></div>
+                <h3><%= item.title %></h3>
+                <p><%= item.description %></p>
+                <button class="btn-resource-open text-link text-link-btn">Xem chi tiết →</button>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="chatbot" class="section">
+        <div class="container chatbot-layout">
+          <div class="chatbot-copy reveal">
+            <p class="eyebrow">Trợ lý AI demo</p>
+            <h2>Chatbot hỗ trợ học môn Lịch sử</h2>
+            <p class="section-note narrow-note">Được hỗ trợ bởi <strong>Google Gemini AI</strong> — hỏi bất cứ điều gì về Lịch sử Việt Nam!</p>
+            <div class="suggestion-list">
+              <% data.chatbotSuggestions.forEach((item) => { %>
+                <button class="suggestion-chip" type="button"><%= item %></button>
+              <% }) %>
+            </div>
+          </div>
+          <div class="chatbot-card reveal" style="transition-delay:.12s">
+            <div class="chatbot-header">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:1.5rem">🤖</span>
+                <div><strong>Sử Việt Bot</strong><small><%= dbEnabled ? 'MongoDB đã kết nối' : 'Gemini AI' %></small></div>
+              </div>
+              <span class="status-dot">Online</span>
+            </div>
+            <div class="chat-window" id="chatWindow">
+              <div class="message bot-message">🤖 Xin chào! Mình là Sử Thần AI, được hỗ trợ bởi Google Gemini. Hỏi mình bất cứ điều gì về Lịch sử Việt Nam nhé!</div>
+            </div>
+            <form class="chat-form" id="chatForm">
+              <input type="text" id="chatInput" name="message" placeholder="Ví dụ: Giải thích chiến thắng Bạch Đằng..." autocomplete="off"/>
+              <button class="button button-primary" type="submit">Gửi</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="section stats-section">
+        <div class="container stats-grid">
+          <% data.stats.forEach((item, i) => { %>
+            <article class="stat-card reveal" style="transition-delay:<%=i*0.08%>s">
+              <strong class="stat-number"><%= item.value %></strong>
+              <span><%= item.label %></span>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="section section-soft">
+        <div class="container">
+          <div class="section-head reveal">
+            <div><p class="eyebrow">Góc học tập</p><h2>Bài viết hỗ trợ học tốt hơn</h2></div>
+            <p class="section-note">Phương pháp, mẹo ghi nhớ và chiến lược ôn tập.</p>
+          </div>
+          <div class="cards-grid three-col">
+            <% data.articles.forEach((article, i) => { %>
+              <article class="article-card reveal" style="transition-delay:<%=i*0.1%>s"
+                data-article="<%- JSON.stringify(article).replace(/"/g,'&quot;') %>">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                  <span class="pill"><%= article.category %></span>
+                  <span style="font-size:.78rem;color:#667085">⏱ <%= article.readTime %></span>
+                </div>
+                <h3><%= article.title %></h3>
+                <p><%= article.excerpt %></p>
+                <button class="btn-article-open text-link text-link-btn">Đọc bài viết →</button>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section class="section final-cta-section">
+        <div class="container final-cta reveal">
+          <div>
+            <p class="eyebrow">Sẵn sàng trải nghiệm?</p>
+            <h2>Bắt đầu hành trình khám phá lịch sử Việt Nam ngay hôm nay</h2>
+          </div>
+          <div class="hero-actions">
+            <a href="#courses" class="button button-primary">📚 Xem khóa học</a>
+            <a href="/games/ai-la-nhan-vat" class="button button-secondary">🎮 Chơi game ngay</a>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <%- include('partials/footer', { brand: data.brand, resources: data.resources }) %>
+
+    <div id="vsModal" class="vs-modal-overlay" role="dialog" aria-modal="true">
+      <div id="vsModalBox" class="vs-modal-box"></div>
+      <button id="vsModalClose" class="vs-modal-close" aria-label="Đóng">✕</button>
+    </div>
+
+    <script>
+    function toggleChapter(id, card) {
+      const panel = document.getElementById('panel-' + id);
+      const isOpen = panel.classList.contains('active');
+      // Đóng tất cả
+      document.querySelectorAll('.chapter-lessons-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.chapter-card').forEach(c => c.classList.remove('active'));
+      // Nếu chưa mở thì mở
+      if (!isOpen) {
+        panel.classList.add('active');
+        card.classList.add('active');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+    </script>
+  </body>
+</html>
