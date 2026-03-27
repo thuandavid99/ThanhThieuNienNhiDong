@@ -3,11 +3,57 @@ const https     = require('https');
 const mongoose  = require('mongoose');
 const siteData  = require('../data/siteData');
 const ChatLog   = require('../models/ChatLog');
+function callGroq(userMessage, customSystemPrompt) {
+  return new Promise((resolve) => {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) { resolve(fallbackReply(userMessage)); return; }
 
+    const systemPrompt = customSystemPrompt || `Bạn là "Sử Thần AI" — trợ lý học tập Lịch sử Việt Nam của Việt Sử Quest, dành cho học sinh lớp 6-12 theo sách Kết nối tri thức. Trả lời bằng tiếng Việt, ngắn gọn dưới 250 từ, dùng emoji và bullet points. Phong cách thân thiện, dễ hiểu.`;
+
+    const bodyData = JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ],
+      max_tokens: 700,
+      temperature: 0.7
+    });
+
+    const options = {
+      hostname: 'api.groq.com',
+      path: '/openai/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Length': Buffer.byteLength(bodyData)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          const text = json?.choices?.[0]?.message?.content;
+          resolve(text || fallbackReply(userMessage));
+        } catch (e) {
+          resolve(fallbackReply(userMessage));
+        }
+      });
+    });
+
+    req.on('error', () => resolve(fallbackReply(userMessage)));
+    req.write(bodyData);
+    req.end();
+  });
+}
 const router = express.Router();
 
 function callGemini(userMessage, customSystemPrompt) {
-  return new Promise((resolve) => {
+  return new Prominose((resolve) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) { resolve(fallbackReply(userMessage)); return; }
 
@@ -75,7 +121,7 @@ router.post('/chat-demo', async (req, res) => {
   const message = (req.body.message || '').trim();
   if (!message) return res.status(400).json({ success: false, reply: 'Bạn hãy nhập câu hỏi nhé.' });
   try {
-    const reply = await callGemini(message);
+    const reply = await callGroq(message);
     if (mongoose.connection.readyState === 1) {
       try { await ChatLog.create({ message, reply }); } catch (e) {}
     }
@@ -89,7 +135,7 @@ router.post('/chat', async (req, res) => {
   const { message, systemPrompt } = req.body;
   if (!message?.trim()) return res.status(400).json({ success: false, reply: 'Vui lòng nhập câu hỏi.' });
   try {
-    const reply = await callGemini(message, systemPrompt);
+    const reply = await callGroq(message, systemPrompt);
     res.json({ success: true, reply });
   } catch (err) {
     res.json({ success: true, reply: fallbackReply(message) });
