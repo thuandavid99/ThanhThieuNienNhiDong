@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="vi">
+<%- include('../partials/head') %>
+<body>
+
+<%- include('../partials/header', { brand }) %>
+
+<style>
+/* ── Breadcrumb ── */
+.bai-breadcrumb {
+  background: #fff8f3;
+  border-bottom: 1px solid #f0e8e0;
+  padding: .75rem 0;
+}
+.bai-breadcrumb-inner {
+  max-width: 900px; margin: 0 auto; padding: 0 1.5rem;
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .85rem; color: #888;
+}
+.bai-breadcrumb a { color: #ff7a1a; text-decoration: none; font-weight: 600; }
+.bai-breadcrumb a:hover { text-decoration: underline; }
+.bai-breadcrumb span { color: #ccc; }
+
+/* ── Hero bài học ── */
+.bai-hero {
+  background: linear-gradient(135deg, #fff8f3 0%, #fff3ea 100%);
+  border-bottom: 2px solid #ffe0c8;
+  padding: 2.5rem 0;
+}
+.bai-hero-inner {
+  max-width: 900px; margin: 0 auto; padding: 0 1.5rem;
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.bai-chapter-badge {
+  background: <%= chapter.color %>22;
+  color: <%= chapter.color %>;
+  font-size: .72rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: .3rem .8rem; border-radius: 99px;
+  border: 1px solid <%= chapter.color %>44;
+  display: inline-block; margin-bottom: .5rem;
+}
+.bai-hero-text h1 {
+  font-size: 1.8rem; font-weight: 800; color: #1a1a1a;
+  margin: 0 0 .5rem; line-height: 1.2;
+}
+.bai-num-big {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: <%= chapter.color %>;
+  color: #fff; font-weight: 800; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Nav bài ── */
+.bai-nav {
+  max-width: 900px; margin: 1.5rem auto 0; padding: 0 1.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem;
+}
+.bai-nav-btn {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .6rem 1.2rem; border-radius: 10px;
+  border: 1.5px solid #f0e8e0; background: #fff;
+  color: #444; font-weight: 600; font-size: .88rem;
+  text-decoration: none; transition: all .15s;
+}
+.bai-nav-btn:hover { border-color: #ff7a1a; color: #ff7a1a; background: #fff8f3; }
+.bai-nav-btn.disabled { opacity: .35; pointer-events: none; }
+.bai-nav-center {
+  font-size: .82rem; color: #aaa; text-align: center;
+}
+
+/* ── Content ── */
+.bai-content {
+  display: flex; flex-direction: column; gap: 2rem;
+}
+
+/* ── Layout with sidebar ── */
+.bai-layout {
+  max-width: 1200px; margin: 2rem auto 0; padding: 0 1.5rem 4rem;
+  display: grid; grid-template-columns: 362px 1fr; gap: 2rem; align-items: start;
+}
+@media (max-width: 768px) { .bai-layout { grid-template-columns: 1fr; } }
+
+/* ── Sidebar ── */
+.bai-sidebar {
+  position: sticky; top: 80px;
+  max-height: 85vh; overflow-y: auto;
+  background: #fff;
+  border: 1.5px solid #f0e8e0;
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+.bai-sidebar::-webkit-scrollbar { width: 4px; }
+.bai-sidebar::-webkit-scrollbar-track { background: transparent; }
+.bai-sidebar::-webkit-scrollbar-thumb { background: #f0e8e0; border-radius: 99px; }
+.bai-sidebar-title {
+  font-size: .68rem; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: #bba;
+  margin-bottom: 1rem; padding-bottom: .75rem;
+  border-bottom: 1px solid #f0e8e0;
+}
+.bai-chapter-group { margin-bottom: .5rem; }
+.bai-chapter-label {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .6rem .75rem; border-radius: 10px;
+  font-size: .8rem; font-weight: 700; color: #555;
+  cursor: pointer; user-select: none;
+  transition: all .15s; margin-bottom: .25rem;
+}
+.bai-chapter-label:hover { background: #fff8f3; color: #ff7a1a; }
+.bai-chapter-label.open { background: #fff4ec; color: #ff7a1a; }
+.bai-chapter-label .ch-arrow {
+  margin-left: auto; font-size: .65rem;
+  transition: transform .2s; opacity: .5;
+}
+.bai-chapter-label.open .ch-arrow { transform: rotate(180deg); opacity: 1; }
+.bai-chapter-lessons { display: none; padding: .25rem 0 .25rem .5rem; }
+.bai-chapter-lessons.open { display: block; }
+.bai-lesson-link {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .45rem .65rem; border-radius: 8px;
+  font-size: .8rem; color: #666; text-decoration: none;
+  transition: all .15s; margin-bottom: 2px; line-height: 1.3;
+}
+.bai-lesson-link:hover { background: #fff8f3; color: #ff7a1a; }
+.bai-lesson-link.active {
+  background: #ff7a1a; color: #fff; font-weight: 700;
+  box-shadow: 0 2px 8px #ff7a1a44;
+}
+.bai-lesson-link .ln {
+  width: 24px; height: 24px; border-radius: 7px;
+  background: rgba(0,0,0,.06); color: inherit;
+  font-size: .68rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.bai-lesson-link.active .ln { background: rgba(255,255,255,.25); }
+
+.bai-section {
+  background: #fff; border: 1.5px solid #f0e8e0;
+  border-radius: 16px; overflow: hidden;
+}
+.bai-section-header {
+  padding: 1rem 1.5rem;
+  background: #fafaf8;
+  border-bottom: 1px solid #f0e8e0;
+  display: flex; align-items: center; gap: .75rem;
+}
+.bai-section-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #ff7a1a22; color: #ff7a1a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.bai-section-title {
+  font-size: .72rem; font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: #ff7a1a; margin: 0;
+}
+.bai-section-body { padding: 1.5rem; }
+
+/* PDF iframe */
+.bai-pdf-wrap {
+  border-radius: 10px; overflow: hidden;
+  border: 1px solid #f0e8e0;
+}
+.bai-pdf-link {
+  display: inline-block; margin-top: .75rem;
+  color: #ff7a1a; font-size: .88rem; font-weight: 600;
+  text-decoration: none;
+}
+.bai-pdf-link:hover { text-decoration: underline; }
+
+/* Markmap */
+.bai-markmap-wrap {
+  border: 1.5px solid #f0e8e0; border-radius: 10px;
+  overflow: hidden; background: #fff;
+}
+.bai-markmap-wrap svg { width: 100%; height: 420px; display: block; }
+
+/* Infographic */
+.bai-infographic img {
+  width: 100%; border-radius: 10px;
+  border: 1.5px solid #f0e8e0; display: block;
+}
+</style>
+
+<!-- Breadcrumb -->
+<div class="bai-breadcrumb">
+  <div class="bai-breadcrumb-inner">
+    <a href="/">Trang chủ</a>
+    <span>›</span>
+    <a href="/lop6">Lịch sử 6</a>
+    <span>›</span>
+    <a href="/lop6#<%= chapter.id %>"><%= chapter.title %></a>
+    <span>›</span>
+    <span style="color:#1a1a1a; font-weight:600;">Bài <%= lesson.number %>. <%= lesson.title %></span>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="bai-hero">
+  <div class="bai-hero-inner">
+    <div class="bai-num-big">B<%= lesson.number %></div>
+    <div class="bai-hero-text">
+      <span class="bai-chapter-badge"><%= chapter.icon %> Chương <%= chapter.number %> — <%= chapter.title %></span>
+      <h1>Bài <%= lesson.number %>. <%= lesson.title %></h1>
+    </div>
+  </div>
+
+  <!-- Prev / Next nav -->
+  <div class="bai-nav">
+    <% if (prevLesson) { %>
+    <a href="/lop6/bai/<%= prevLesson.number %>" class="bai-nav-btn">← Bài <%= prevLesson.number %>. <%= prevLesson.title.length > 30 ? prevLesson.title.substring(0,30)+'…' : prevLesson.title %></a>
+    <% } else { %>
+    <span class="bai-nav-btn disabled">← Bài trước</span>
+    <% } %>
+
+    <div class="bai-nav-center">
+      Bài <strong><%= lesson.number %></strong> / 20
+    </div>
+
+    <% if (nextLesson) { %>
+    <a href="/lop6/bai/<%= nextLesson.number %>" class="bai-nav-btn">Bài <%= nextLesson.number %>. <%= nextLesson.title.length > 30 ? nextLesson.title.substring(0,30)+'…' : nextLesson.title %> →</a>
+    <% } else { %>
+    <span class="bai-nav-btn disabled">Bài tiếp →</span>
+    <% } %>
+  </div>
+</div>
+
+<!-- Content + Sidebar -->
+<div class="bai-layout">
+
+  <!-- Sidebar -->
+  <aside class="bai-sidebar">
+    <div class="bai-sidebar-title">Danh sách bài học</div>
+    <% allChapters.forEach(function(ch) { %>
+    <div class="bai-chapter-group">
+      <div class="bai-chapter-label <%= ch.id === chapter.id ? 'open' : '' %>"
+           onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open')">
+        <span><%= ch.icon %></span>
+        <span>Chương <%= ch.number %></span>
+        <span class="ch-arrow">▾</span>
+      </div>
+      <div class="bai-chapter-lessons <%= ch.id === chapter.id ? 'open' : '' %>">
+        <% ch.lessons.forEach(function(l) { %>
+        <a href="/lop6/bai/<%= l.number %>"
+           class="bai-lesson-link <%= l.number === lesson.number ? 'active' : '' %>">
+          <span class="ln">B<%= l.number %></span>
+          <span style="font-weight:600"><%= l.title %></span>
+        </a>
+        <% }) %>
+      </div>
+    </div>
+    <% }) %>
+  </aside>
+
+  <!-- Main content -->
+  <main class="bai-content">
+
+    <!-- PDF Sách giáo khoa -->
+    <% if (lesson.pdf) { %>
+    <div class="bai-section">
+      <div class="bai-section-header">
+        <div class="bai-section-icon">📖</div>
+        <h2 class="bai-section-title">Sách giáo khoa</h2>
+      </div>
+      <div class="bai-section-body">
+        <div class="bai-pdf-wrap">
+          <iframe src="<%= lesson.pdf %>" width="100%" height="600px" style="display:block; border:none;"></iframe>
+        </div>
+        <a href="<%= lesson.pdf %>" target="_blank" class="bai-pdf-link">↗ Mở PDF trong tab mới</a>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Sơ đồ tư duy -->
+    <div class="bai-section">
+      <div class="bai-section-header">
+        <div class="bai-section-icon">🧠</div>
+        <h2 class="bai-section-title">Sơ đồ tư duy</h2>
+      </div>
+      <div class="bai-section-body">
+        <div class="bai-markmap-wrap">
+          <svg class="markmap" data-content="<%= encodeURIComponent(lesson.mindmap) %>"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Infographic -->
+    <% if (lesson.infographic) { %>
+    <div class="bai-section">
+      <div class="bai-section-header">
+        <div class="bai-section-icon">🎨</div>
+        <h2 class="bai-section-title">Infographic</h2>
+      </div>
+      <div class="bai-section-body bai-infographic">
+        <img src="<%= lesson.infographic %>" alt="Infographic <%= lesson.title %>">
+      </div>
+    </div>
+    <% } %>
+
+  </main>
+</div>
+
+<%- include('../partials/footer', { brand, resources: [], currentYear }) %>
+
+<!-- Floating Chatbot -->
+<style>
+.float-chat-btn {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: linear-gradient(135deg, #ff7a1a, #e96508);
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255,122,26,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; transition: transform .2s, box-shadow .2s;
+  animation: pulse-chat 2s ease-in-out infinite;
+}
+.float-chat-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(255,122,26,0.5); }
+@keyframes pulse-chat {
+  0%,100% { box-shadow: 0 4px 20px rgba(255,122,26,0.4); }
+  50% { box-shadow: 0 4px 32px rgba(255,122,26,0.7); }
+}
+
+.float-chat-popup {
+  position: fixed; bottom: 6rem; right: 2rem; z-index: 999;
+  width: 340px; background: #fff;
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  display: none; flex-direction: column;
+  max-height: 480px;
+  animation: popUp .25s ease;
+}
+.float-chat-popup.open { display: flex; }
+@keyframes popUp {
+  from { opacity:0; transform:translateY(20px) scale(.95); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+.float-chat-header {
+  background: linear-gradient(135deg, #ff7a1a, #e96508);
+  padding: .85rem 1.1rem;
+  display: flex; align-items: center; gap: .75rem;
+}
+.float-chat-header-icon { font-size: 1.5rem; }
+.float-chat-header-text strong { display:block; color:#fff; font-size:.95rem; }
+.float-chat-header-text small { color:rgba(255,255,255,.8); font-size:.75rem; }
+.float-chat-close {
+  margin-left:auto; background:none; border:none;
+  color:rgba(255,255,255,.8); font-size:1.1rem; cursor:pointer;
+  padding:.2rem .4rem; border-radius:6px;
+  transition: background .15s;
+}
+.float-chat-close:hover { background:rgba(255,255,255,.2); color:#fff; }
+
+.float-chat-context {
+  background: #fff8f3; padding: .6rem 1rem;
+  font-size: .75rem; color: #888;
+  border-bottom: 1px solid #f0e8e0;
+}
+.float-chat-context strong { color: #ff7a1a; }
+
+.float-chat-messages {
+  flex: 1; overflow-y: auto; padding: 1rem;
+  display: flex; flex-direction: column; gap: .6rem;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+}
+.float-chat-messages::-webkit-scrollbar { width: 4px; }
+.float-chat-messages::-webkit-scrollbar-thumb { background: #f0e8e0; border-radius:99px; }
+
+.fc-msg { max-width: 85%; padding: .6rem .85rem; border-radius: 12px; font-size: .85rem; line-height: 1.5; }
+.fc-msg.bot { background: #f5f0eb; color: #333; align-self: flex-start; border-radius: 4px 12px 12px 12px; }
+.fc-msg.user { background: #ff7a1a; color: #fff; align-self: flex-end; border-radius: 12px 4px 12px 12px; }
+.fc-msg.typing { background: #f5f0eb; align-self: flex-start; }
+
+.float-chat-suggestions {
+  padding: .5rem 1rem; display: flex; gap: .4rem; flex-wrap: wrap;
+  border-top: 1px solid #f0e8e0;
+}
+.fc-suggest {
+  font-size: .72rem; padding: .3rem .65rem; border-radius: 99px;
+  border: 1.5px solid #ff7a1a22; background: #fff8f3;
+  color: #ff7a1a; cursor: pointer; transition: all .15s; font-weight:600;
+}
+.fc-suggest:hover { background: #ff7a1a; color: #fff; }
+
+.float-chat-form {
+  display: flex; gap: .5rem; padding: .75rem 1rem;
+  border-top: 1px solid #f0e8e0;
+}
+.float-chat-input {
+  flex: 1; padding: .55rem .85rem; border-radius: 99px;
+  border: 1.5px solid #f0e8e0; font-size: .85rem;
+  outline: none; transition: border-color .15s;
+}
+.float-chat-input:focus { border-color: #ff7a1a; }
+.float-chat-send {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #ff7a1a; border: none; cursor: pointer;
+  color: #fff; font-size: 1rem; display: flex;
+  align-items: center; justify-content: center;
+  transition: background .15s; flex-shrink: 0;
+}
+.float-chat-send:hover { background: #e96508; }
+</style>
+
+<!-- Floating button -->
+<button class="float-chat-btn" onclick="toggleFloatChat()" title="Hỏi Sử Thần AI">
+  🧙
+</button>
+
+<!-- Popup chatbot -->
+<div class="float-chat-popup" id="floatChatPopup">
+  <div class="float-chat-header">
+    <span class="float-chat-header-icon">🧙</span>
+    <div class="float-chat-header-text">
+      <strong>Sử Thần AI</strong>
+      <small>Hỏi mình về bài đang học!</small>
+    </div>
+    <button class="float-chat-close" onclick="toggleFloatChat()">✕</button>
+  </div>
+
+  <div class="float-chat-context">
+    Đang học: <strong>Bài <%= lesson.number %>. <%= lesson.title %></strong>
+  </div>
+
+  <div class="float-chat-messages" id="floatChatMessages">
+    <div class="fc-msg bot">👋 Xin chào! Mình là <strong>Sử Thần AI</strong>. Bạn đang học <strong>Bài <%= lesson.number %></strong> — hỏi mình bất cứ điều gì nhé!</div>
+  </div>
+
+  <div class="float-chat-suggestions" id="floatSuggestions">
+    <button class="fc-suggest" onclick="sendFloatSuggestion(this)">Tóm tắt bài này</button>
+    <button class="fc-suggest" onclick="sendFloatSuggestion(this)">Điểm quan trọng cần nhớ</button>
+    <button class="fc-suggest" onclick="sendFloatSuggestion(this)">Cho mình 3 câu hỏi ôn tập</button>
+  </div>
+
+  <div class="float-chat-form">
+    <input class="float-chat-input" id="floatChatInput" type="text"
+           placeholder="Hỏi về bài học..."
+           onkeydown="if(event.key==='Enter') sendFloatChat()">
+    <button class="float-chat-send" onclick="sendFloatChat()">➤</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.16"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.16"></script>
+<script>
+// Markmap
+window.addEventListener('load', function() {
+  document.querySelectorAll('svg.markmap').forEach(function(svg) {
+    const content = decodeURIComponent(svg.getAttribute('data-content'));
+    try {
+      const transformer = new markmap.Transformer();
+      const { root } = transformer.transform(content);
+      const mm = markmap.Markmap.create(svg, { duration: 300, colorFreezeLevel: 2 }, root);
+      mm.fit();
+    } catch(e) { console.error(e); }
+  });
+});
+
+// Floating chatbot
+const LESSON_CONTEXT = 'Bài <%= lesson.number %>. <%= lesson.title %> (Chương <%= chapter.number %>: <%= chapter.title %>)';
+
+function toggleFloatChat() {
+  const popup = document.getElementById('floatChatPopup');
+  popup.classList.toggle('open');
+  if (popup.classList.contains('open')) {
+    document.getElementById('floatChatInput').focus();
+  }
+}
+
+function addFloatMsg(text, type) {
+  const box = document.getElementById('floatChatMessages');
+  const div = document.createElement('div');
+  div.className = 'fc-msg ' + type;
+  div.textContent = text;
+  div.innerHTML = div.innerHTML.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+function sendFloatSuggestion(btn) {
+  const text = btn.textContent;
+  document.getElementById('floatSuggestions').style.display = 'none';
+  addFloatMsg(text, 'user');
+  callChat(text);
+}
+
+function sendFloatChat() {
+  const input = document.getElementById('floatChatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  document.getElementById('floatSuggestions').style.display = 'none';
+  addFloatMsg(msg, 'user');
+  callChat(msg);
+}
+
+function callChat(msg) {
+  const typing = addFloatMsg('💬 Đang trả lời...', 'typing');
+  const systemPrompt = 'Bạn là Sử Thần AI — trợ lý học tập Lịch sử Việt Nam. Học sinh đang học: ' + LESSON_CONTEXT + '. Hãy trả lời ngắn gọn dưới 150 từ, dùng emoji, thân thiện với học sinh lớp 6.';
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: msg, systemPrompt: systemPrompt })
+  })
+  .then(r => r.json())
+  .then(data => {
+    typing.remove();
+    addFloatMsg(data.reply || 'Xin lỗi, mình chưa trả lời được!', 'bot');
+  })
+  .catch(() => {
+    typing.remove();
+    addFloatMsg('⚠️ Lỗi kết nối, thử lại nhé!', 'bot');
+  });
+}
+</script>
+
+</body>
+</html>

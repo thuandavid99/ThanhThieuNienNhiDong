@@ -66,124 +66,203 @@
         <div class="container">
           <div class="section-head reveal">
             <div><p class="eyebrow">Khóa học theo lớp</p><h2>Lịch sử <span style="color:#ff7a1a">6</span> – Kết nối tri thức</h2></div>
-            <p class="section-note">5 chương · 20 bài học · Sơ đồ tư duy tương tác cho từng bài.</p>
+            <p class="section-note">5 chương · 20 bài học · Chọn chương để bắt đầu hành trình!</p>
           </div>
 
           <style>
-            .chapter-cards-grid {
-              display: grid;
-              grid-template-columns: repeat(5, 1fr);
-              gap: 1.25rem;
-              margin-bottom: 1.75rem;
+            /* ── Particles ── */
+            .hex-particles { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+            .hex-particle { position:absolute; font-size:1.2rem; opacity:0; animation: floatUp 6s ease-in-out infinite; }
+            @keyframes floatUp {
+              0% { opacity:0; transform:translateY(40px) rotate(0deg); }
+              20% { opacity:.6; }
+              80% { opacity:.4; }
+              100% { opacity:0; transform:translateY(-60px) rotate(360deg); }
             }
-            @media (max-width: 900px) { .chapter-cards-grid { grid-template-columns: repeat(3, 1fr); } }
-            @media (max-width: 600px) { .chapter-cards-grid { grid-template-columns: repeat(2, 1fr); } }
 
-            .chapter-card {
-              position: relative;
-              border-radius: 20px;
-              overflow: hidden;
-              cursor: pointer;
-              transition: transform .22s, box-shadow .22s;
-              aspect-ratio: 3/4;
-              min-height: 220px;
-              box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            /* ── Hexagon wrapper ── */
+            .hex-section { position:relative; padding:2rem 0 3rem; }
+            .hex-grid {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 0;
+              max-width: 900px;
+              margin: 0 auto;
             }
-            .chapter-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
-            .chapter-card.active { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+            .hex-row { display:flex; justify-content:center; margin-bottom:-16px; }
+            .hex-row.offset { margin-left: 112px; }
+
+            /* ── Single hexagon ── */
+            .hex-item {
+              width: 260px;
+              height: 286px;
+              position: relative;
+              cursor: pointer;
+              margin: 16px;
+              transition: transform .3s ease, filter .3s;
+              animation: hexFlyIn .6s ease both;
+            }
+            .hex-item:nth-child(1) { animation-delay: .1s; }
+            .hex-item:nth-child(2) { animation-delay: .2s; }
+            .hex-item:nth-child(3) { animation-delay: .3s; }
+            .hex-item:nth-child(4) { animation-delay: .4s; }
+            .hex-item:nth-child(5) { animation-delay: .5s; }
+            @keyframes hexFlyIn {
+              from { opacity:0; transform:translateY(50px) scale(.8); }
+              to   { opacity:1; transform:translateY(0) scale(1); }
+            }
+            .hex-item:hover { transform:translateY(-8px) scale(1.05); filter:brightness(1.1); z-index:2; }
+            .hex-item.active { transform:translateY(-6px) scale(1.04); z-index:2; }
+
+            /* Hexagon clip */
+            .hex-inner {
+              width: 100%;
+              height: 100%;
+              clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+              position: relative;
+              overflow: hidden;
+              transition: box-shadow .3s;
+            }
+            .hex-item:hover .hex-inner {
+              box-shadow: 0 0 30px rgba(255,122,26,0.6), 0 0 60px rgba(255,122,26,0.3);
+            }
+            .hex-item.active .hex-inner {
+              box-shadow: 0 0 40px rgba(255,122,26,0.8);
+            }
 
             /* Màu nền mỗi chương */
-            .chapter-card:nth-child(1) { background: linear-gradient(145deg, #2d6a4f, #52b788); }
-            .chapter-card:nth-child(2) { background: linear-gradient(145deg, #1d3557, #457b9d); }
-            .chapter-card:nth-child(3) { background: linear-gradient(145deg, #7b2d00, #c1440e); }
-            .chapter-card:nth-child(4) { background: linear-gradient(145deg, #5c4a00, #c9a227); }
-            .chapter-card:nth-child(5) { background: linear-gradient(145deg, #6b0000, #c1121f); }
+            .hex-item:nth-child(1) .hex-inner { background: linear-gradient(145deg, #2d6a4f, #52b788); }
+            .hex-item:nth-child(2) .hex-inner { background: linear-gradient(145deg, #1d3557, #457b9d); }
+            .hex-item:nth-child(3) .hex-inner { background: linear-gradient(145deg, #7b2d00, #c1440e); }
+            .hex-item:nth-child(4) .hex-inner { background: linear-gradient(145deg, #5c4a00, #c9a227); }
+            .hex-item:nth-child(5) .hex-inner { background: linear-gradient(145deg, #6b0000, #c1121f); }
 
-            /* Ảnh minh họa góc phải dưới */
-            .chapter-card-img {
-              position: absolute;
-              bottom: 0; right: 0;
-              width: 100%;
-              height: 50%;
-              object-fit: cover;
-              object-position: center top;
-              opacity: .95;
-              border-radius: 0 0 20px 20px;
-              mask-image: linear-gradient(to bottom, transparent 0%, black 60%);
-              -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 60%);
-              transition: transform .3s;
+            /* Ảnh trong hex */
+            .hex-img {
+              position:absolute; inset:0;
+              width:100%; height:100%;
+              object-fit:cover;
+              opacity:.5;
+              transition:opacity .3s, transform .3s;
             }
-            .chapter-card:hover .chapter-card-img { transform: scale(1.05) translateY(-4px); }
+            .hex-item:hover .hex-img { opacity:.7; transform:scale(1.1); }
 
-            /* Overlay gradient để chữ dễ đọc */
-            .chapter-card-overlay {
-              position: absolute; inset: 0;
-              background: linear-gradient(135deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+            /* Overlay */
+            .hex-overlay {
+              position:absolute; inset:0;
+              background:linear-gradient(to bottom, rgba(0,0,0,.1) 0%, rgba(0,0,0,.55) 100%);
             }
 
-            /* Họa tiết nền */
-            .chapter-card::before {
-              content: '';
-              position: absolute; inset: 0;
-              background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
-              background-size: 18px 18px;
-              pointer-events: none;
+            /* Nội dung */
+            .hex-content {
+              position:absolute; inset:0;
+              display:flex; flex-direction:column;
+              align-items:center; justify-content:center;
+              text-align:center; padding:1.5rem .75rem;
+              z-index:2;
+            }
+            .hex-num {
+              font-size:.6rem; font-weight:800; letter-spacing:.15em;
+              text-transform:uppercase; color:rgba(255,255,255,.7);
+              margin-bottom:.3rem;
+            }
+            .hex-title {
+              font-size:.82rem; font-weight:800; color:#fff;
+              line-height:1.3; margin-bottom:.6rem;
+              text-shadow:0 2px 8px rgba(0,0,0,.5);
+            }
+            .hex-badge {
+              font-size:.68rem; font-weight:700; color:#fff;
+              background:rgba(255,255,255,.2);
+              backdrop-filter:blur(4px);
+              padding:.2rem .55rem; border-radius:99px;
+              border:1px solid rgba(255,255,255,.3);
+              margin-bottom:.5rem;
             }
 
-            /* Active border glow */
-            .chapter-card.active::after {
-              content: '';
-              position: absolute; inset: 0;
-              border-radius: 20px;
-              border: 3px solid rgba(255,255,255,0.6);
-              pointer-events: none;
+            /* Progress bar */
+            .hex-progress {
+              width:70%; height:3px;
+              background:rgba(255,255,255,.2);
+              border-radius:99px; overflow:hidden;
+            }
+            .hex-progress-bar {
+              height:100%;
+              background:linear-gradient(90deg, #ff7a1a, #ffcb6b);
+              border-radius:99px;
+              width:0%;
+              transition:width 1s ease .5s;
+            }
+            .hex-item.active .hex-progress-bar { width:15%; }
+
+            /* Active glow ring */
+            .hex-item.active .hex-inner::after {
+              content:'';
+              position:absolute; inset:-3px;
+              clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+              background:transparent;
+              border:3px solid rgba(255,200,50,.8);
+              pointer-events:none;
             }
 
-            /* Nội dung text */
-            .chapter-card-content {
-              position: absolute;
-              top: 0; left: 0;
-              padding: 1.1rem 1rem;
-              z-index: 2;
-            }
-            .chapter-card-content .ch-num {
-              font-size: .65rem; font-weight: 800;
-              letter-spacing: .12em; text-transform: uppercase;
-              color: rgba(255,255,255,0.75);
-              margin-bottom: .3rem;
-              display: block;
-            }
-            .chapter-card-content .ch-title {
-              font-size: .88rem; font-weight: 800;
-              color: #fff; line-height: 1.35;
-              margin-bottom: .6rem;
-              text-shadow: 0 1px 4px rgba(0,0,0,0.3);
-            }
-            .chapter-card-content .ch-count {
-              display: inline-block;
-              font-size: .72rem; font-weight: 700;
-              color: #fff;
-              background: rgba(255,255,255,0.2);
-              backdrop-filter: blur(4px);
-              padding: .2rem .6rem;
-              border-radius: 99px;
-              border: 1px solid rgba(255,255,255,0.3);
+            /* Ribbon */
+            .hex-ribbon {
+              position:absolute; top:28px; right:-2px;
+              background:#ff7a1a; color:#fff;
+              font-size:.55rem; font-weight:800;
+              padding:.2rem .5rem;
+              border-radius:4px 0 0 4px;
+              z-index:3; letter-spacing:.05em;
+              box-shadow:-2px 2px 8px rgba(0,0,0,.3);
             }
 
-            /* Panel bài học */
-            .chapter-lessons-panel { display:none; background:#fff; border:2px solid #ff7a1a; border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; animation:slideDown .22s ease; }
-            .chapter-lessons-panel.active { display:block; }
-            @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-            .panel-header { display:flex; align-items:center; gap:.85rem; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1.5px solid #f0e8e0; }
-            .panel-header-img { width:48px; height:48px; object-fit:cover; border-radius:10px; }
-            .panel-title { font-size:1.05rem; font-weight:800; color:#1a1a1a; margin:0; }
-            .panel-sub { font-size:.8rem; color:#999; margin:.2rem 0 0; }
-            .lesson-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:.5rem; }
-            .lesson-item { display:flex; align-items:center; gap:.75rem; padding:.65rem .9rem; border-radius:10px; border:1.5px solid #f0e8e0; background:#fafaf8; text-decoration:none; color:#1a1a1a; transition:all .15s; }
-            .lesson-item:hover { border-color:#ff7a1a; background:#fff8f3; transform:translateX(3px); }
-            .lesson-item-num { width:30px; height:30px; border-radius:8px; background:#fff4ec; color:#ff7a1a; font-weight:800; font-size:.8rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-            .lesson-item-title { flex:1; font-size:.88rem; font-weight:500; }
-            .lesson-item:hover .lesson-item-title { color:#ff7a1a; }
+            /* 3D tilt effect */
+            .hex-item { transform-style:preserve-3d; }
+
+            /* ── Panel bài học ── */
+            .hex-lessons-panel {
+              display:none; max-width:900px; margin:2rem auto 0;
+              background:#fff; border:2px solid #ff7a1a;
+              border-radius:20px; padding:1.75rem;
+              animation:slideDown .25s ease;
+            }
+            .hex-lessons-panel.active { display:block; }
+            @keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+            .hex-panel-header {
+              display:flex; align-items:center; gap:1rem;
+              margin-bottom:1.25rem; padding-bottom:1rem;
+              border-bottom:1.5px solid #f0e8e0;
+            }
+            .hex-panel-img { width:52px; height:52px; object-fit:cover; border-radius:12px; }
+            .hex-panel-title { font-size:1.1rem; font-weight:800; color:#1a1a1a; margin:0; }
+            .hex-panel-sub { font-size:.82rem; color:#999; margin:.2rem 0 0; }
+            .hex-lesson-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:.5rem; }
+            .hex-lesson-item {
+              display:flex; align-items:center; gap:.75rem;
+              padding:.65rem .9rem; border-radius:10px;
+              border:1.5px solid #f0e8e0; background:#fafaf8;
+              text-decoration:none; color:#1a1a1a; transition:all .15s;
+            }
+            .hex-lesson-item:hover { border-color:#ff7a1a; background:#fff8f3; transform:translateX(3px); }
+            .hex-lesson-num {
+              width:30px; height:30px; border-radius:8px;
+              background:#fff4ec; color:#ff7a1a;
+              font-weight:800; font-size:.8rem;
+              display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            }
+            .hex-lesson-title { flex:1; font-size:.88rem; font-weight:500; }
+            .hex-lesson-item:hover .hex-lesson-title { color:#ff7a1a; }
+
+            @media (max-width:768px) {
+              .hex-item { width:150px; height:165px; }
+              .hex-row.offset { margin-left:80px; }
+              .hex-title { font-size:.72rem; }
+            }
+            @media (max-width:480px) {
+              .hex-item { width:120px; height:132px; }
+              .hex-row.offset { margin-left:64px; }
+            }
           </style>
 
           <%
@@ -194,39 +273,67 @@
               { src: '/images/chapters/chuong4.jpg' },
               { src: '/images/chapters/chuong5.jpg' }
             ];
+            const ribbons = ['MỚI', 'MỚI', 'MỚI', 'MỚI', 'MỚI'];
           %>
 
-          <div class="chapter-cards-grid reveal">
-            <% data.lop6Chapters.forEach(function(ch, i) { %>
-            <div class="chapter-card" onclick="toggleChapter('<%= ch.id %>', this)">
-              <div class="chapter-card-overlay"></div>
-              <img class="chapter-card-img"
-                   src="<%= chapterImages[i].src %>"
-                   alt="Chương <%= ch.number %>"
-                   onerror="this.style.display='none'">
-              <div class="chapter-card-content">
-                <span class="ch-num">Chương <%= ch.number %></span>
-                <div class="ch-title"><%= ch.title %></div>
-                <span class="ch-count"><%= ch.lessons.length %> bài học</span>
+          <div class="hex-section reveal">
+            <!-- Floating particles -->
+            <div class="hex-particles" id="hexParticles"></div>
+
+            <!-- Row 1: 3 hexagons -->
+            <div class="hex-row">
+              <% [0,1,2].forEach(function(i) { var ch = data.lop6Chapters[i]; %>
+              <div class="hex-item" id="hex-<%= ch.id %>" onclick="toggleHex('<%= ch.id %>', this)">
+                <span class="hex-ribbon"><%= ribbons[i] %></span>
+                <div class="hex-inner">
+                  <img class="hex-img" src="<%= chapterImages[i].src %>" alt="" onerror="this.style.display='none'">
+                  <div class="hex-overlay"></div>
+                  <div class="hex-content">
+                    <div class="hex-num">Chương <%= ch.number %></div>
+                    <div class="hex-title"><%= ch.title %></div>
+                    <div class="hex-badge"><%= ch.lessons.length %> bài học</div>
+                    <div class="hex-progress"><div class="hex-progress-bar"></div></div>
+                  </div>
+                </div>
               </div>
+              <% }) %>
             </div>
-            <% }) %>
+
+            <!-- Row 2: 2 hexagons (offset) -->
+            <div class="hex-row offset">
+              <% [3,4].forEach(function(i) { var ch = data.lop6Chapters[i]; %>
+              <div class="hex-item" id="hex-<%= ch.id %>" onclick="toggleHex('<%= ch.id %>', this)">
+                <span class="hex-ribbon"><%= ribbons[i] %></span>
+                <div class="hex-inner">
+                  <img class="hex-img" src="<%= chapterImages[i].src %>" alt="" onerror="this.style.display='none'">
+                  <div class="hex-overlay"></div>
+                  <div class="hex-content">
+                    <div class="hex-num">Chương <%= ch.number %></div>
+                    <div class="hex-title"><%= ch.title %></div>
+                    <div class="hex-badge"><%= ch.lessons.length %> bài học</div>
+                    <div class="hex-progress"><div class="hex-progress-bar"></div></div>
+                  </div>
+                </div>
+              </div>
+              <% }) %>
+            </div>
           </div>
 
+          <!-- Lesson panels -->
           <% data.lop6Chapters.forEach(function(ch, i) { %>
-          <div class="chapter-lessons-panel" id="panel-<%= ch.id %>">
-            <div class="panel-header">
-              <img class="panel-header-img" src="<%= chapterImages[i].src %>" alt="" onerror="this.style.display='none'">
+          <div class="hex-lessons-panel" id="hex-panel-<%= ch.id %>">
+            <div class="hex-panel-header">
+              <img class="hex-panel-img" src="<%= chapterImages[i].src %>" alt="" onerror="this.style.display='none'">
               <div>
-                <div class="panel-title"><%= ch.title %></div>
-                <div class="panel-sub">Chương <%= ch.number %> · <%= ch.lessons.length %> bài học</div>
+                <div class="hex-panel-title"><%= ch.title %></div>
+                <div class="hex-panel-sub">Chương <%= ch.number %> · <%= ch.lessons.length %> bài học</div>
               </div>
             </div>
-            <div class="lesson-list">
+            <div class="hex-lesson-list">
               <% ch.lessons.forEach(function(lesson) { %>
-              <a href="/lop6#lesson-<%= lesson.id %>" class="lesson-item">
-                <div class="lesson-item-num">B<%= lesson.number %></div>
-                <div class="lesson-item-title">Bài <%= lesson.number %>. <%= lesson.title %></div>
+              <a href="/lop6/bai/<%= lesson.number %>" class="hex-lesson-item">
+                <div class="hex-lesson-num">B<%= lesson.number %></div>
+                <div class="hex-lesson-title">Bài <%= lesson.number %>. <%= lesson.title %></div>
               </a>
               <% }) %>
             </div>
@@ -234,9 +341,8 @@
           <% }) %>
 
         </div>
-          </div>
-        </div>
       </section>
+
 
 
 
@@ -346,9 +452,7 @@
     </div>
   <% }) %>
 </div>
-            </div>
-          </div>
-        </div>
+             
       </section>
 
       <section id="resources" class="section section-soft">
@@ -463,17 +567,47 @@
     </div>
 
     <script>
-    function toggleChapter(id, card) {
-      const panel = document.getElementById('panel-' + id);
+    // Hexagon toggle
+    function toggleHex(id, item) {
+      const panel = document.getElementById('hex-panel-' + id);
       const isOpen = panel.classList.contains('active');
-      // Đóng tất cả
-      document.querySelectorAll('.chapter-lessons-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.chapter-card').forEach(c => c.classList.remove('active'));
-      // Nếu chưa mở thì mở
+      document.querySelectorAll('.hex-lessons-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.hex-item').forEach(h => h.classList.remove('active'));
       if (!isOpen) {
         panel.classList.add('active');
-        card.classList.add('active');
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        item.classList.add('active');
+        panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      }
+    }
+
+    // 3D tilt effect
+    document.querySelectorAll('.hex-item').forEach(function(hex) {
+      hex.addEventListener('mousemove', function(e) {
+        const rect = hex.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width/2;
+        const y = e.clientY - rect.top - rect.height/2;
+        const tiltX = (y / rect.height) * 20;
+        const tiltY = -(x / rect.width) * 20;
+        hex.style.transform = `translateY(-8px) scale(1.05) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+      });
+      hex.addEventListener('mouseleave', function() {
+        hex.style.transform = '';
+      });
+    });
+
+    // Floating particles
+    const particles = ['⚔️','📜','🏛️','🥁','🗺️','⭐','🏯','🛡️'];
+    const container = document.getElementById('hexParticles');
+    if (container) {
+      for (let i = 0; i < 15; i++) {
+        const p = document.createElement('span');
+        p.className = 'hex-particle';
+        p.textContent = particles[Math.floor(Math.random() * particles.length)];
+        p.style.left = Math.random() * 100 + '%';
+        p.style.top = Math.random() * 100 + '%';
+        p.style.animationDelay = Math.random() * 6 + 's';
+        p.style.animationDuration = (4 + Math.random() * 4) + 's';
+        container.appendChild(p);
       }
     }
     </script>

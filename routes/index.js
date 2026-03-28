@@ -109,6 +109,39 @@ router.get('/games/flashcard', (req, res) => {
   });
 });
 
+router.get('/lop6/bai/:number', (req, res) => {
+  const number = parseInt(req.params.number);
+  let lesson = null, chapter = null;
+  let allLessons = [];
+
+  // Gom tất cả bài theo thứ tự
+  lop6Data.chapters.forEach(ch => {
+    ch.lessons.forEach(l => {
+      allLessons.push({ ...l, chapterId: ch.id });
+    });
+  });
+
+  // Tìm bài theo số
+  const idx = allLessons.findIndex(l => l.number === number);
+  if (idx === -1) return res.status(404).render('404', { pageTitle: '404', brand: siteData.brand });
+
+  lesson = allLessons[idx];
+  chapter = lop6Data.chapters.find(ch => ch.id === lesson.chapterId);
+  const prevLesson = idx > 0 ? allLessons[idx - 1] : null;
+  const nextLesson = idx < allLessons.length - 1 ? allLessons[idx + 1] : null;
+
+  res.render('grades/bai', {
+    pageTitle: `Bài ${lesson.number}. ${lesson.title} – Lịch sử 6`,
+    brand: siteData.brand,
+    lesson,
+    chapter,
+    prevLesson,
+    nextLesson,
+    allChapters: lop6Data.chapters,
+    currentYear: new Date().getFullYear()
+  });
+});
+
 router.get('/lop6', (req, res) => {
   res.render('grades/lop6', {
     pageTitle: 'Lịch sử 6 – Kết nối tri thức',
