@@ -311,9 +311,10 @@
 <style>
 .float-chat-btn {
   position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;
-  width: 60px; height: 60px; border-radius: 50%;
-  background: linear-gradient(135deg, #ff7a1a, #e96508);
+  width: 80px; height: 80px; border-radius: 50%;
+  background: transparent;
   border: none; cursor: pointer;
+  padding: 0;
   box-shadow: 0 4px 20px rgba(255,122,26,0.4);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.6rem; transition: transform .2s, box-shadow .2s;
@@ -409,16 +410,16 @@
 
 <!-- Floating button -->
 <button class="float-chat-btn" onclick="toggleFloatChat()" title="Hỏi Sử Thần AI">
-  🧙
+  <img src="/images/logo-chatbot.png" style="width:80px;height:80px;object-fit:cover;border-radius:50%;">
 </button>
 
 <!-- Popup chatbot -->
 <div class="float-chat-popup" id="floatChatPopup">
   <div class="float-chat-header">
-    <span class="float-chat-header-icon">🧙</span>
+    <img src="/images/logo-chatbot.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
     <div class="float-chat-header-text">
       <strong>Sử Thần AI</strong>
-      <small>Hỏi mình về bài đang học!</small>
+      <small>Trợ lý AI của Trạm Sử Meta</small>
     </div>
     <button class="float-chat-close" onclick="toggleFloatChat()">✕</button>
   </div>
