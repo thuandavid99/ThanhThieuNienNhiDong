@@ -388,11 +388,10 @@
           </div>
         </div>
       </section>
-
       <section id="games" class="section section-soft">
         <div class="container">
           <div class="section-head reveal">
-            <div><p class="eyebrow">Trung tâm trò chơi</p><h2>Game lịch sử để học sinh vừa chơi vừa nhớ bài</h2></div>
+            <div><p class="eyebrow">XƯỞNG CỔ VẬT</p><h2>Game lịch sử để học sinh vừa chơi vừa nhớ bài</h2></div>
             <p class="section-note">Mỗi trò chơi gắn với bài học và mốc thời gian cụ thể.</p>
           </div>
           <div class="cards-grid four-col">
@@ -416,7 +415,38 @@
           </div>
         </div>
       </section>
-
+<section id="dau-truong-meta" class="section">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">ĐẤU TRƯỜNG META</p>
+              <h2>5 Game tương tác cho 5 chương Lịch sử 6</h2>
+            </div>
+            <p class="section-note">Mỗi chương một game độc đáo — vừa học vừa chiến!</p>
+          </div>
+          <div class="cards-grid four-col" style="grid-template-columns: repeat(3, 1fr);">
+            <% [
+              { number: 1, name: 'Phòng chứa bí mật', type: 'Kéo & Thả', emoji: '🗂️', desc: 'Phân loại tư liệu lịch sử và giải bài toán thời gian trên trục timeline cổ điển.', chapter: 'Chương 1 · Vì sao phải học lịch sử?' },
+              { number: 2, name: 'Giải mã vách đá', type: 'Khám phá', emoji: '🔦', desc: 'Dùng đuốc rọi sáng hang động, khám phá các câu hỏi ẩn trên vách đá nguyên thủy.', chapter: 'Chương 2 · Xã hội nguyên thủy' },
+              { number: 3, name: 'La bàn học giả', type: 'Nối thẻ', emoji: '🧭', desc: 'Nối đúng thành tựu văn minh với quốc gia trước khi hết giờ đếm ngược.', chapter: 'Chương 3 · Xã hội cổ đại' },
+              { number: 4, name: 'Giao thương Biển Đông', type: 'Quản lý', emoji: '⛵', desc: 'Điều khiển tàu buôn, trả lời câu hỏi để cập bến các vương quốc Đông Nam Á cổ đại.', chapter: 'Chương 4 · Đông Nam Á' },
+              { number: 5, name: 'Thành đồng bất khuất', type: 'Tower Defense', emoji: '🏯', desc: 'Trả lời nhanh để bắn lui quân xâm lược, bảo vệ thành trì của người Việt cổ.', chapter: 'Chương 5 · Việt Nam TCN – TK X' }
+            ].forEach((g, i) => { %>
+              <article class="game-card game-card--live reveal" style="transition-delay:<%=i*0.08%>s">
+                <div class="game-card-top">
+                  <span class="pill"><%= g.type %></span>
+                  <span class="pill pill-badge">MỚI</span>
+                </div>
+                <div class="game-emoji"><%= g.emoji %></div>
+                <h3><%= g.name %></h3>
+                <p><%= g.desc %></p>
+                <div class="game-detail"><small><%= g.chapter %></small></div>
+                <a href="/games/chuong<%= g.number %>.html" class="button button-primary small-button game-play-btn">▶ Chơi ngay</a>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
       <section id="map" class="section">
         <div class="container map-layout">
           <div class="reveal">
