@@ -8,7 +8,7 @@
       <section class="hero-section hero-history-bg">
         <div class="container hero-grid">
           <div class="hero-copy reveal">
-            <div class="hero-eyebrow-wrap"><span class="eyebrow-dot"></span><p class="eyebrow">Nền tảng học sử bằng trải nghiệm</p></div>
+            <div class="hero-eyebrow-wrap"><span class="eyebrow-dot"></span><p class="eyebrow" style="font-size:2rem; font-weight:800; letter-spacing:0.15em;">Nền tảng học sử bằng trải nghiệm</p></div>
             <h1 style="font-size:2rem; font-style:italic; line-height:1.6;">
               <%= data.hero.title %><br>
               <%= data.hero.titleLine2 %>
@@ -460,45 +460,38 @@
   <div class="gallery-track-wrap">
     <div class="gallery-track track-left">
       <% [
-        { icon: '📸', quote: 'Giao diện đẹp quá!' },
-        { icon: '🖥️', quote: 'Bản đồ tương tác thú vị!' },
-        { icon: '👥', quote: 'Học nhóm hiệu quả hơn!' },
-        { icon: '😊', quote: 'Dễ dùng, dễ nhớ bài!' },
-        { icon: '🎮', quote: 'Game lịch sử hay lắm!' },
-        { icon: '📱', quote: 'Dùng điện thoại cũng được!' },
-        { icon: '🏆', quote: 'Em đạt điểm cao nhờ web!' },
-        { icon: '✨', quote: 'Mindmap rất trực quan!' },
-        { icon: '📸', quote: 'Giao diện đẹp quá!' },
-        { icon: '🖥️', quote: 'Bản đồ tương tác thú vị!' }
+        { img: 'hs1.jpg', quote: 'Giao diện đẹp quá!' },
+        { img: 'hs2.jpg', quote: 'Bản đồ tương tác thú vị!' },
+        { img: 'hs1.jpg', quote: 'Học nhóm hiệu quả hơn!' },
+        { img: 'hs1.jpg', quote: 'Dễ dùng, dễ nhớ bài!' },
+        { img: 'hs1.jpg', quote: 'Game lịch sử hay lắm!' },
+        { img: 'hs1.jpg', quote: 'Em đạt điểm cao nhờ web!' }
       ].forEach(item => { %>
         <div class="gallery-item">
-          <div class="gallery-icon"><%= item.icon %></div>
+          <img src="/images/community/<%= item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
           <div class="gallery-hover-quote">"<%= item.quote %>"</div>
         </div>
       <% }) %>
     </div>
   </div>
 
-  <!-- Băng chuyền ảnh hàng 2 - chạy trái -->
   <div class="gallery-track-wrap" style="margin-top:1rem;">
     <div class="gallery-track track-right">
       <% [
-        { icon: '🗺️', quote: 'Timeline dễ nhớ hơn!' },
-        { icon: '💡', quote: 'Chatbot giải đáp nhanh!' },
-        { icon: '📚', quote: 'Tài liệu phong phú!' },
-        { icon: '🎯', quote: 'Quiz ôn bài rất hay!' },
-        { icon: '🌟', quote: 'Web xịn nhất em từng dùng!' },
-        { icon: '🤩', quote: 'Học sử không còn chán!' },
-        { icon: '🗺️', quote: 'Timeline dễ nhớ hơn!' },
-        { icon: '💡', quote: 'Chatbot giải đáp nhanh!' },
-        { icon: '📚', quote: 'Tài liệu phong phú!' },
-        { icon: '🎯', quote: 'Quiz ôn bài rất hay!' }
+        { img: 'hs1.jpg', quote: 'Timeline dễ nhớ hơn!' },
+        { img: 'hs1.jpg', quote: 'Chatbot giải đáp nhanh!' },
+        { img: 'hs1.jpg', quote: 'Tài liệu phong phú!' },
+        { img: 'hs1.jpg', quote: 'Quiz ôn bài rất hay!' },
+        { img: 'hs1.jpg', quote: 'Web xịn nhất em từng dùng!' },
+        { img: 'hs1.jpg', quote: 'Học sử không còn chán!' }
       ].forEach(item => { %>
         <div class="gallery-item">
-          <div class="gallery-icon"><%= item.icon %></div>
+          <img src="/images/community/<%= item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
           <div class="gallery-hover-quote">"<%= item.quote %>"</div>
         </div>
       <% }) %>
+    </div>
+  </div>
     </div>
   </div>
 
