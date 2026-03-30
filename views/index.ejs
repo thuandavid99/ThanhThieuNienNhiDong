@@ -462,10 +462,10 @@
       <% [
         { img: 'hs1.jpg', quote: 'Giao diện đẹp quá!' },
         { img: 'hs2.jpg', quote: 'Bản đồ tương tác thú vị!' },
-        { img: 'hs1.jpg', quote: 'Học nhóm hiệu quả hơn!' },
-        { img: 'hs1.jpg', quote: 'Dễ dùng, dễ nhớ bài!' },
+        { img: 'hs3.jpg', quote: 'Học nhóm hiệu quả hơn!' },
+        { img: 'hs4.jpg', quote: 'Dễ dùng, dễ nhớ bài!' },
         { img: 'hs1.jpg', quote: 'Game lịch sử hay lắm!' },
-        { img: 'hs1.jpg', quote: 'Em đạt điểm cao nhờ web!' }
+        { img: 'hs2.jpg', quote: 'Em đạt điểm cao nhờ web!' }
       ].forEach(item => { %>
         <div class="gallery-item">
           <img src="/images/community/<%= item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
@@ -478,12 +478,12 @@
   <div class="gallery-track-wrap" style="margin-top:1rem;">
     <div class="gallery-track track-right">
       <% [
-        { img: 'hs1.jpg', quote: 'Timeline dễ nhớ hơn!' },
-        { img: 'hs1.jpg', quote: 'Chatbot giải đáp nhanh!' },
+        { img: 'hs3.jpg', quote: 'Timeline dễ nhớ hơn!' },
+        { img: 'hs4.jpg', quote: 'Chatbot giải đáp nhanh!' },
         { img: 'hs1.jpg', quote: 'Tài liệu phong phú!' },
-        { img: 'hs1.jpg', quote: 'Quiz ôn bài rất hay!' },
-        { img: 'hs1.jpg', quote: 'Web xịn nhất em từng dùng!' },
-        { img: 'hs1.jpg', quote: 'Học sử không còn chán!' }
+        { img: 'hs2.jpg', quote: 'Quiz ôn bài rất hay!' },
+        { img: 'hs3.jpg', quote: 'Web xịn nhất em từng dùng!' },
+        { img: 'hs4.jpg', quote: 'Học sử không còn chán!' }
       ].forEach(item => { %>
         <div class="gallery-item">
           <img src="/images/community/<%= item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
@@ -534,8 +534,8 @@
   display: flex; gap: 1rem; padding: 1rem 0;
   width: max-content;
 }
-.track-left { animation: scrollLeft 30s linear infinite; }
-.track-right { animation: scrollRight 30s linear infinite; }
+.track-left { animation: scrollLeft 15s linear infinite; }
+.track-right { animation: scrollRight 15s linear infinite; }
 @keyframes scrollLeft {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
