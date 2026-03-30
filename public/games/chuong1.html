@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đấu trường Meta: Ngăn kéo Ký ức (Pro Version)</title>
+    <title>Đấu trường Meta: Ngăn kéo Ký ức</title>
     <style>
+        /* Bắt buộc dùng phông chữ Times New Roman cho toàn bộ game */
         * {
             font-family: "Times New Roman", Times, serif !important;
             box-sizing: border-box;
@@ -32,12 +33,14 @@
             align-items: center;
         }
 
+        /* Canvas game */
         canvas {
             max-width: 100%;
             max-height: 100%;
+            aspect-ratio: 1200 / 800; /* Khoá cứng tỉ lệ để luôn chuẩn khung hình */
             box-shadow: 0 0 100px rgba(0, 0, 0, 1);
-            /* Con trỏ kính lúp cổ điển */
-            cursor: url('https://cdn-icons-png.flaticon.com/32/639/639352.png') 16 16, auto;
+            /* Dùng con trỏ grab tiêu chuẩn của trình duyệt, KHÔNG dùng ảnh ngoài để tránh lỗi hỏng ảnh */
+            cursor: grab;
         }
 
         canvas:active {
@@ -117,18 +120,11 @@
             <div class="intro-box">
                 <h1>Ngăn kéo Ký ức</h1>
                 <p><b>Chương 1: Vì sao phải học lịch sử?</b></p>
-                <p>Khám phá chiếc bàn làm việc của một nhà khảo cổ học. Hãy dùng kính lúp soi xét từng hiện vật và cẩn thận phân loại chúng vào đúng 3 ngăn kéo: <br><span style="color:#f4b41a;">Truyền miệng — Chữ viết — Hiện vật</span>.</p>
+                <p>Khám phá chiếc bàn làm việc của một nhà khảo cổ học. Hãy soi xét từng hiện vật và cẩn thận phân loại chúng vào đúng 3 ngăn kéo: <br><span style="color:#f4b41a;">Truyền miệng — Chữ viết — Hiện vật</span>.</p>
                 <button class="start-btn" id="btn-start">MỞ NGĂN KÉO</button>
             </div>
         </div>
     </div>
-
-    <!-- Âm thanh chất lượng cao -->
-    <audio id="sfx-paper" src="https://actions.google.com/sounds/v1/office/paper_flip.ogg" preload="auto"></audio>
-    <audio id="sfx-slide" src="https://actions.google.com/sounds/v1/wood/wood_plank_movement.ogg" preload="auto"></audio>
-    <audio id="sfx-success" src="https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg" preload="auto"></audio>
-    <audio id="sfx-error" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg" preload="auto"></audio>
-    <audio id="sfx-win" src="https://actions.google.com/sounds/v1/foley/brass_bell_series.ogg" preload="auto"></audio>
 
     <script>
         // ==========================================
@@ -136,16 +132,19 @@
         // ==========================================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const cw = canvas.width;
-        const ch = canvas.height;
+        const cw = 1200;
+        const ch = 800;
 
-        const sfxPaper = document.getElementById('sfx-paper');
-        const sfxSlide = document.getElementById('sfx-slide');
-        const sfxSuccess = document.getElementById('sfx-success');
-        const sfxError = document.getElementById('sfx-error');
-        const sfxWin = document.getElementById('sfx-win');
+        // Xử lý chống mờ (Anti-blur) trên màn hình độ phân giải cao (Retina/Mobile)
+        function setupCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = cw * dpr; // Tăng độ phân giải thực tế trong bộ nhớ
+            canvas.height = ch * dpr;
+            ctx.scale(dpr, dpr); // Giữ nguyên toạ độ logic
+        }
+        setupCanvas();
 
-        let gameState = 'START'; // START, PLAYING, WIN
+        let gameState = 'START'; // Các trạng thái: START, PLAYING, WIN
         let particles = [];
         let itemsPlaced = 0;
         let time = 0;
@@ -157,7 +156,60 @@
         let dragOffsetY = 0;
 
         // ==========================================
-        // DỮ LIỆU BÀI HỌC (TƯ LIỆU LỊCH SỬ)
+        // HỆ THỐNG TỔNG HỢP ÂM THANH (WEB AUDIO API)
+        // Code âm thanh thuần chay (không cần file mp3) để chống lỗi 100%
+        // ==========================================
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Hàm phát âm thanh cơ bản bằng sóng
+        function playSynthTone(freq, type, duration, vol = 0.1) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            // Tạo Envelope (Fade in/out mượt mà để tránh tiếng lách cách)
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // Tạo các hiệu ứng âm thanh chuyên biệt
+        const SFX = {
+            paper: () => playSynthTone(300, 'square', 0.1, 0.05), // Tiếng sột soạt nhẹ khi nhấc thẻ
+            slide: () => playSynthTone(150, 'triangle', 0.15, 0.08), // Tiếng gỗ trượt nhẹ khi thẻ bay về
+            success: () => {
+                playSynthTone(600, 'sine', 0.1, 0.1);
+                setTimeout(() => playSynthTone(800, 'sine', 0.3, 0.15), 100); // Tiếng Ting! Ting! khi thả đúng
+            },
+            error: () => playSynthTone(200, 'sawtooth', 0.4, 0.1), // Tiếng rè báo lỗi khi thả sai
+            win: () => {
+                // Hợp âm chiến thắng
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // Đô Mi Son Đô
+                notes.forEach((freq, i) => {
+                    setTimeout(() => playSynthTone(freq, 'sine', 0.5, 0.15), i * 150);
+                });
+            }
+        };
+
+        // ==========================================
+        // DỮ LIỆU BÀI HỌC (TƯ LIỆU LỊCH SỬ CHƯƠNG 1)
         // ==========================================
         const dataItems = [
             { id: '1', label: 'Sự tích Trăm Trứng', type: 'truyen-mieng', 
@@ -188,7 +240,7 @@
                 this.w = w;
                 this.h = h;
                 this.isHovered = false;
-                this.glow = 0; // Hiệu ứng sáng lên
+                this.glow = 0; // Giá trị phát sáng lõi ngăn kéo
             }
 
             draw() {
@@ -200,20 +252,23 @@
                 ctx.shadowBlur = 15;
                 ctx.shadowOffsetY = 10;
 
-                // Thân ngăn kéo (Màu gỗ đậm)
+                // Thân ngăn kéo (Gradient màu gỗ tối)
                 const grad = ctx.createLinearGradient(0, 0, 0, this.h);
                 grad.addColorStop(0, '#5c3a21');
                 grad.addColorStop(1, '#2c180b');
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, this.w, this.h);
 
-                // Viền gỗ
+                // Viền gỗ mộc
+                ctx.shadowColor = 'transparent';
                 ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
                 ctx.strokeStyle = '#1a0d04';
                 ctx.lineWidth = 4;
                 ctx.strokeRect(0, 0, this.w, this.h);
 
-                // Hiệu ứng phát sáng khi đưa đồ vật lại gần (Hover/Drag Over)
+                // Hiệu ứng phát sáng khi đưa đồ vật lại gần (Drag Over)
                 if (this.isHovered) {
                     this.glow = Math.min(this.glow + 0.1, 1);
                 } else {
@@ -222,12 +277,12 @@
                 
                 if (this.glow > 0) {
                     ctx.globalAlpha = this.glow * 0.3;
-                    ctx.fillStyle = '#f4b41a';
+                    ctx.fillStyle = '#f4b41a'; // Vàng rực
                     ctx.fillRect(2, 2, this.w - 4, this.h - 4);
                     ctx.globalAlpha = 1.0;
                 }
 
-                // Tay nắm ngăn kéo bằng đồng
+                // Tay nắm ngăn kéo
                 ctx.fillStyle = '#b5a642';
                 ctx.beginPath();
                 ctx.roundRect(this.w/2 - 40, 20, 80, 15, 5);
@@ -241,7 +296,7 @@
                 ctx.fillRect(this.w/2 - 70, 50, 140, 40);
                 ctx.strokeRect(this.w/2 - 70, 50, 140, 40);
 
-                // Chữ trên nhãn
+                // Text trên nhãn
                 ctx.fillStyle = '#3e200c';
                 ctx.font = 'bold 22px "Times New Roman"';
                 ctx.textAlign = 'center';
@@ -263,20 +318,20 @@
                 this.w = 160;
                 this.h = 110;
                 
-                // Vị trí gốc ngẫu nhiên trên mặt bàn
+                // Vị trí gốc rơi ngẫu nhiên trên mặt bàn
                 this.originX = Math.random() * (cw - 300) + 150;
                 this.originY = Math.random() * (ch - 450) + 300;
                 
                 this.x = this.originX;
                 this.y = this.originY;
                 
-                this.originAngle = (Math.random() - 0.5) * 0.5; // Nghiêng ngẫu nhiên
+                this.originAngle = (Math.random() - 0.5) * 0.5; // Đặt nghiêng lộn xộn
                 this.angle = this.originAngle;
                 
                 this.scale = 1;
                 this.isPlaced = false;
                 
-                // Thuộc tính vật lý (Lerp)
+                // Thuộc tính vật lý (Dùng cho hàm Lerp để tạo quán tính trượt)
                 this.targetX = this.x;
                 this.targetY = this.y;
                 this.targetAngle = this.angle;
@@ -285,8 +340,8 @@
 
             update() {
                 if (this.isPlaced) return;
-
-                // Nội suy (Lerp) mượt mà về mục tiêu
+                
+                // Nội suy (Lerp) mượt mà về mục tiêu (Vị trí chuột hoặc vị trí rơi)
                 this.x += (this.targetX - this.x) * 0.2;
                 this.y += (this.targetY - this.y) * 0.2;
                 this.angle += (this.targetAngle - this.angle) * 0.2;
@@ -301,38 +356,41 @@
                 ctx.rotate(this.angle);
                 ctx.scale(this.scale, this.scale);
 
-                // Bóng đổ (Lớn và nhoè hơn khi được nhấc lên)
+                // Đổ bóng 3D: Bóng to ra và mờ đi khi thẻ được nhấc lên (scale tăng)
                 let isLifted = (this.scale > 1.05);
                 ctx.shadowColor = 'rgba(0,0,0,0.6)';
                 ctx.shadowBlur = isLifted ? 25 : 8;
                 ctx.shadowOffsetY = isLifted ? 15 : 4;
                 ctx.shadowOffsetX = isLifted ? 5 : 2;
 
-                // Nền thẻ bài (Giấy da / Parchment)
+                // Nền thẻ bài bằng giấy da
                 ctx.fillStyle = '#eedcb1';
                 ctx.beginPath();
                 ctx.roundRect(-this.w/2, -this.h/2, this.w, this.h, 8);
                 ctx.fill();
 
-                // Viền hoạ tiết
-                ctx.shadowBlur = 0; // Tắt bóng cho chi tiết bên trong
+                // Viền hoạ tiết thẻ bài
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
                 ctx.strokeStyle = '#c4a678';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(-this.w/2 + 6, -this.h/2 + 6, this.w - 12, this.h - 12);
 
-                // Dấu mộc đỏ giả cổ ở góc
+                // Dấu mộc đỏ giả cổ
                 ctx.fillStyle = 'rgba(139, 0, 0, 0.4)';
                 ctx.beginPath();
                 ctx.arc(-this.w/2 + 20, -this.h/2 + 20, 10, 0, Math.PI*2);
                 ctx.fill();
 
-                // Chữ trên thẻ
+                // Chữ tên tư liệu
                 ctx.fillStyle = '#3e200c';
                 ctx.font = 'bold 20px "Times New Roman"';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                // Xuống dòng tự động nếu tên quá dài
+                // Cắt chữ xuống dòng tự động
                 const words = this.label.split(' ');
                 if (words.length > 3) {
                     ctx.fillText(words.slice(0,2).join(' '), 0, -10);
@@ -345,22 +403,22 @@
             }
         }
 
-        // 3. Hệ thống Hạt bụi / Ma thuật (Particle)
+        // 3. Hệ thống Hạt bụi (Particle)
         class Particle {
             constructor(x, y, type) {
                 this.x = x;
                 this.y = y;
-                this.type = type; // 'dust' hoặc 'spark'
+                this.type = type; // 'dust' (bụi mờ) hoặc 'spark' (pháo hoa)
                 
                 if (type === 'dust') {
                     this.vx = (Math.random() - 0.5) * 0.5;
-                    this.vy = (Math.random() - 0.5) * 0.5 - 0.2; // Bay nhẹ lên
+                    this.vy = (Math.random() - 0.5) * 0.5 - 0.2; // Bay bay lên trên
                     this.size = Math.random() * 2 + 1;
                     this.life = Math.random();
                     this.decay = 0.005;
                     this.color = 'rgba(224, 212, 184, '; // Vàng nhạt
                 } else {
-                    // Pháo hoa khi thả đúng
+                    // Pháo hoa toả ra tứ phía khi thả đồ thành công
                     const angle = Math.random() * Math.PI * 2;
                     const speed = Math.random() * 8 + 2;
                     this.vx = Math.cos(angle) * speed;
@@ -375,9 +433,7 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                if (this.type === 'spark') {
-                    this.vy += 0.2; // Trọng lực hút tia lửa xuống
-                }
+                if (this.type === 'spark') this.vy += 0.2; // Lực hút trái đất kéo tia lửa xuống
                 this.life -= this.decay;
             }
 
@@ -391,7 +447,7 @@
         }
 
         // ==========================================
-        // KHỞI TẠO MẢNG & DỮ LIỆU GAME
+        // KHỞI TẠO DỮ LIỆU GAME
         // ==========================================
         const drawers = [
             new Drawer('truyen-mieng', 'Truyền miệng', 150, 50, 250, 120),
@@ -409,10 +465,10 @@
         }
 
         // ==========================================
-        // CÁC HÀM RENDER CHÍNH
+        // HỆ THỐNG RENDER (VẼ ĐỒ HOẠ)
         // ==========================================
-
-        // Hàm ngắt dòng chữ an toàn
+        
+        // Hàm tự động xuống dòng cho văn bản dài
         function wrapText(context, text, x, y, maxWidth, lineHeight) {
             const words = text.split(' ');
             let line = '';
@@ -431,12 +487,12 @@
             context.fillText(line, x, currentY);
         }
 
+        // Vẽ bàn làm việc
         function drawBackground() {
-            // Nền vân gỗ mặt bàn
-            ctx.fillStyle = '#3b2313';
+            ctx.fillStyle = '#3b2313'; // Màu gỗ sồi cơ bản
             ctx.fillRect(0, 0, cw, ch);
-
-            // Đánh bóng tối ở 4 góc (Vignette)
+            
+            // Lớp Vignette (Mờ đen ở 4 góc để tập trung ánh sáng vào giữa)
             const gradient = ctx.createRadialGradient(cw/2, ch/2, 200, cw/2, ch/2, 800);
             gradient.addColorStop(0, 'rgba(0,0,0,0)');
             gradient.addColorStop(1, 'rgba(0,0,0,0.8)');
@@ -444,13 +500,14 @@
             ctx.fillRect(0, 0, cw, ch);
         }
 
+        // Vẽ Bảng thông tin (Nơi hiện dòng mô tả)
         function drawInfoPlaque() {
-            // Khung hiển thị thông tin ở góc dưới cùng
             const pX = cw/2 - 450;
             const pY = ch - 140;
             const pW = 900;
             const pH = 110;
 
+            // Khung nền
             ctx.shadowColor = 'rgba(0,0,0,0.8)';
             ctx.shadowBlur = 20;
             ctx.fillStyle = 'rgba(26, 15, 7, 0.9)';
@@ -458,70 +515,67 @@
             ctx.roundRect(pX, pY, pW, pH, 10);
             ctx.fill();
 
+            // Viền kim loại đôi
+            ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
-            ctx.strokeStyle = '#b5a642'; // Viền đồng
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.strokeStyle = '#b5a642';
             ctx.lineWidth = 3;
             ctx.strokeRect(pX + 5, pY + 5, pW - 10, pH - 10);
             ctx.strokeStyle = '#5c3a21';
             ctx.lineWidth = 1;
             ctx.strokeRect(pX + 10, pY + 10, pW - 20, pH - 20);
 
+            // Nội dung Text
             ctx.fillStyle = '#f4e4c1';
             ctx.font = 'italic 24px "Times New Roman"';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
 
-            let textToShow = "Dùng kính lúp (chuột) nhấc từng hiện vật lên để kiểm tra thông tin...";
+            let textToShow = "Nhấc từng hiện vật lên để kiểm tra thông tin...";
             if (dragItem) {
                 textToShow = dragItem.desc;
-                ctx.fillStyle = '#f4b41a'; // Vàng sáng khi đang đọc
+                ctx.fillStyle = '#f4b41a'; // Vàng rực khi đang đọc mô tả
             } else if (itemsPlaced === artifacts.length) {
                 textToShow = "Tuyệt vời! Thầy/Trò đã phân loại hoàn hảo toàn bộ tư liệu.";
-                ctx.fillStyle = '#00ffcc';
+                ctx.fillStyle = '#00ffcc'; // Xanh ngọc khi hoàn thành
             }
 
             wrapText(ctx, textToShow, cw/2, pY + 25, pW - 60, 32);
         }
 
-        // ==========================================
-        // VÒNG LẶP GAME (GAME LOOP)
-        // ==========================================
+        // Vòng lặp chính của Game (Khoảng 60 FPS)
         function gameLoop() {
             if (gameState === 'START') return;
             time++;
 
-            // Cập nhật Logic
+            // Cập nhật vị trí vật phẩm
             artifacts.forEach(item => item.update());
 
-            // Sinh bụi nền tự nhiên
+            // Quản lý hệ thống Hạt bụi nền
             if (particles.length < 50 && Math.random() < 0.1) {
                 particles.push(new Particle(Math.random()*cw, Math.random()*ch, 'dust'));
             }
-            
-            // Xử lý Hạt
             for (let i = particles.length - 1; i >= 0; i--) {
                 particles[i].update();
                 if (particles[i].life <= 0) particles.splice(i, 1);
             }
 
-            // --- VẼ MÀN HÌNH ---
+            // Gọi các hàm Vẽ
             drawBackground();
-            
-            // Vẽ 3 Ngăn kéo
             drawers.forEach(d => d.draw());
-
-            // Vẽ bảng thông tin
             drawInfoPlaque();
 
             // Vẽ các thẻ bài chưa đặt
-            // Vẽ thẻ bình thường trước, thẻ đang kéo (dragItem) vẽ sau cùng để nó nổi lên trên
+            // Thẻ đang kéo (dragItem) sẽ được vẽ SAU CÙNG để luôn nổi đè lên các thẻ khác
             artifacts.forEach(item => { if (item !== dragItem) item.draw(); });
             if (dragItem) dragItem.draw();
 
-            // Vẽ hạt bụi/pháo hoa đè lên trên cùng
+            // Vẽ hạt bụi đè lên mọi thứ
             particles.forEach(p => p.draw());
 
-            // Màn hình chiến thắng
+            // Xử lý Màn hình Chiến thắng
             if (gameState === 'WIN') {
                 ctx.fillStyle = 'rgba(0,0,0,0.85)';
                 ctx.fillRect(0, 0, cw, ch);
@@ -543,26 +597,25 @@
         }
 
         // ==========================================
-        // XỬ LÝ TƯƠNG TÁC (MOUSE & TOUCH)
+        // XỬ LÝ SỰ KIỆN TƯƠNG TÁC (MOUSE / TOUCH)
         // ==========================================
-
         function getMousePos(evt) {
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+            // Scale toạ độ để chuột luôn khớp bất kể màn hình bị thu nhỏ bao nhiêu
+            const scaleX = cw / rect.width;
+            const scaleY = ch / rect.height;
             let cx = evt.clientX;
             let cy = evt.clientY;
+            
+            // Hỗ trợ cảm ứng trên điện thoại/máy tính bảng
             if (evt.touches && evt.touches.length > 0) {
                 cx = evt.touches[0].clientX;
                 cy = evt.touches[0].clientY;
             }
-            return {
-                x: (cx - rect.left) * scaleX,
-                y: (cy - rect.top) * scaleY
-            };
+            return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
         }
 
-        // Kiểm tra toạ độ có nằm trong vùng Thẻ bài không (Có tính Scale)
+        // Kiểm tra xem chuột có click trúng thẻ bài không (Có tính scale)
         function isInsideItem(pos, item) {
             const halfW = (item.w * item.scale) / 2;
             const halfH = (item.h * item.scale) / 2;
@@ -570,30 +623,25 @@
                    pos.y >= item.y - halfH && pos.y <= item.y + halfH;
         }
 
-        // Kiểm tra va chạm với Ngăn kéo (Hitbox)
+        // Kiểm tra xem thẻ bài có đang lướt trên ngăn kéo nào không
         function checkDrawerHover(pos) {
-            drawers.forEach(d => d.isHovered = false); // Reset hết
+            drawers.forEach(d => d.isHovered = false); // Tắt sáng toàn bộ
             for (let d of drawers) {
-                if (pos.x >= d.x && pos.x <= d.x + d.w &&
-                    pos.y >= d.y && pos.y <= d.y + d.h) {
-                    d.isHovered = true;
+                // Hitbox của ngăn kéo
+                if (pos.x >= d.x && pos.x <= d.x + d.w && pos.y >= d.y && pos.y <= d.y + d.h) {
+                    d.isHovered = true; // Bật sáng ngăn kéo này
                     return d;
                 }
             }
             return null;
         }
 
-        function playSound(audioEl) {
-            audioEl.currentTime = 0;
-            audioEl.play().catch(()=>{});
-        }
-
-        // Bắt đầu kéo
+        // Nhấn Chuột
         function handleDown(e) {
             if (gameState !== 'PLAYING') return;
             const pos = getMousePos(e);
             
-            // Duyệt từ trên xuống (phần tử cuối mảng vẽ lên cùng)
+            // Duyệt mảng ngược (từ trên cùng xuống)
             for (let i = artifacts.length - 1; i >= 0; i--) {
                 let item = artifacts[i];
                 if (!item.isPlaced && isInsideItem(pos, item)) {
@@ -602,13 +650,13 @@
                     dragOffsetX = pos.x - item.x;
                     dragOffsetY = pos.y - item.y;
                     
-                    // Hiệu ứng nhấc lên
+                    // Hiệu ứng nhấc lên: Scale bự ra và chỉnh góc xoay về 0 để dễ đọc
                     item.targetScale = 1.15;
-                    item.targetAngle = 0; // Cầm lên thì để thẳng lại cho dễ đọc
-                    playSound(sfxPaper);
-                    playSound(sfxSlide);
+                    item.targetAngle = 0;
+                    
+                    SFX.paper(); // Tiếng sột soạt
 
-                    // Đẩy thẻ đang cầm xuống cuối mảng để vẽ nổi lên trên
+                    // Đưa phần tử này xuống cuối mảng để vẽ lên trên cùng
                     artifacts.splice(i, 1);
                     artifacts.push(item);
                     break;
@@ -616,19 +664,20 @@
             }
         }
 
-        // Đang kéo
+        // Kéo Chuột
         function handleMove(e) {
             if (!isDragging || !dragItem) return;
-            e.preventDefault(); // Chống cuộn màn hình trên đt
+            e.preventDefault(); // Tránh cuộn trang trên mobile
             const pos = getMousePos(e);
             
+            // Cập nhật vị trí đích của thẻ bài
             dragItem.targetX = pos.x - dragOffsetX;
             dragItem.targetY = pos.y - dragOffsetY;
 
-            checkDrawerHover(pos);
+            checkDrawerHover(pos); // Gọi để bật sáng ngăn kéo nếu trượt qua
         }
 
-        // Thả tay
+        // Thả Chuột
         function handleUp(e) {
             if (!isDragging || !dragItem) return;
             
@@ -640,58 +689,61 @@
                     // => ĐÚNG NGĂN KÉO
                     dragItem.isPlaced = true;
                     itemsPlaced++;
-                    playSound(sfxSuccess);
+                    SFX.success(); // Tiếng Ting! Ting!
                     
-                    // Nổ pháo hoa hạt
+                    // Nổ 30 hạt pháo hoa
                     for(let i=0; i<30; i++) {
                         particles.push(new Particle(droppedDrawer.x + droppedDrawer.w/2, droppedDrawer.y + droppedDrawer.h/2, 'spark'));
                     }
 
+                    // Check chiến thắng
                     if (itemsPlaced === artifacts.length) {
                         setTimeout(() => {
                             gameState = 'WIN';
-                            playSound(sfxWin);
+                            SFX.win();
                         }, 1000);
                     }
                 } else {
                     // => SAI NGĂN KÉO (Trả về vị trí cũ)
                     dragItem.targetX = dragItem.originX;
                     dragItem.targetY = dragItem.originY;
-                    dragItem.targetAngle = dragItem.originAngle;
-                    playSound(sfxError);
+                    dragItem.targetAngle = dragItem.originAngle; // Đặt nghiêng lại như cũ
+                    SFX.error(); // Tiếng rè rè
                 }
             } else {
-                // Thả ra ngoài bàn (Trả về vị trí cũ)
+                // Thả ra ngoài bàn trống (Trả về vị trí cũ nhẹ nhàng)
                 dragItem.targetX = dragItem.originX;
                 dragItem.targetY = dragItem.originY;
                 dragItem.targetAngle = dragItem.originAngle;
-                playSound(sfxSlide);
+                SFX.slide(); // Tiếng trượt trên gỗ
             }
 
+            // Trả lại kích thước bình thường
             dragItem.targetScale = 1.0;
             dragItem = null;
             isDragging = false;
+            
+            // Tắt hiệu ứng sáng của mọi ngăn kéo
             drawers.forEach(d => d.isHovered = false);
         }
 
-        // Đăng ký sự kiện
+        // Đăng ký sự kiện (Chuột)
         canvas.addEventListener('mousedown', handleDown);
         canvas.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleUp);
         
+        // Đăng ký sự kiện (Cảm ứng Mobile/Tablet)
         canvas.addEventListener('touchstart', handleDown, {passive: false});
         canvas.addEventListener('touchmove', handleMove, {passive: false});
         window.addEventListener('touchend', handleUp);
 
         // Nút Start
         document.getElementById('btn-start').addEventListener('click', () => {
+            initAudio(); // Rất quan trọng: Phải khởi tạo AudioContext khi user click thì trình duyệt mới cho phát tiếng
             document.getElementById('start-screen').style.display = 'none';
             initGame();
             gameState = 'PLAYING';
             gameLoop();
-            
-            // Trick để trình duyệt cho phép phát âm thanh
-            sfxPaper.volume = 0; sfxPaper.play().then(()=> {sfxPaper.pause(); sfxPaper.volume=1;}).catch(()=>{});
         });
 
     </script>
