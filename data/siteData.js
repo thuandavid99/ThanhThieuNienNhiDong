@@ -1,8 +1,8 @@
 module.exports = {
   brand: { name: 'Trạm Sử Meta', tagline: 'Nền tảng học Lịch sử bằng trải nghiệm' },
   hero: {
-    title: '"Dân ta phải biết sử ta"',
-    titleLine2: '"Cho tường gốc tích nước nhà Việt Nam.',
+    title: '"Dân ta phải biết sử ta',
+    titleLine2: 'Cho tường gốc tích nước nhà Việt Nam."',
     subtitle: 'Học theo lớp 6-12, luyện quiz, chơi game lịch sử, khám phá bản đồ sự kiện và hỏi đáp cùng trợ lý AI trên một giao diện hiện đại.',
     primaryAction: 'Bắt đầu học ngay',
     secondaryAction: 'Khám phá trò chơi'
