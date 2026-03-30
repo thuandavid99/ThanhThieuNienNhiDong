@@ -205,7 +205,7 @@
   <div class="bai-hero-inner">
     <div class="bai-num-big">B<%= lesson.number %></div>
     <div class="bai-hero-text">
-      <span class="bai-chapter-badge"><%= chapter.icon %> Chương <%= chapter.number %> — <%= chapter.title %></span>
+      <span class="bai-chapter-badge">Chương <%= chapter.number %> — <%= chapter.title %></span>
       <h1>Bài <%= lesson.number %>. <%= lesson.title %></h1>
     </div>
   </div>
@@ -240,7 +240,7 @@
     <div class="bai-chapter-group">
       <div class="bai-chapter-label <%= ch.id === chapter.id ? 'open' : '' %>"
            onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open')">
-        <span><%= ch.icon %></span>
+        <img src="/images/chapters/chuong<%= ch.number %>.png" onerror="this.src='/images/chapters/chuong<%= ch.number %>.jpg'" style="width:22px;height:22px;border-radius:5px;object-fit:cover;flex-shrink:0;">
         <span>Chương <%= ch.number %></span>
         <span class="ch-arrow">▾</span>
       </div>

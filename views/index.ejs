@@ -9,8 +9,12 @@
         <div class="container hero-grid">
           <div class="hero-copy reveal">
             <div class="hero-eyebrow-wrap"><span class="eyebrow-dot"></span><p class="eyebrow">Nền tảng học sử bằng trải nghiệm</p></div>
-            <h1><%= data.hero.title %></h1>
-            <p class="hero-text"><%= data.hero.subtitle %></p>
+            <h1 style="font-size:2rem; font-style:italic; line-height:1.6;">
+              <%= data.hero.title %><br>
+              <%= data.hero.titleLine2 %>
+              <span style="display:block; text-align:right; font-size:1rem; font-style:italic; color:#888; font-weight:400;">(Hồ Chí Minh)</span>
+            </h1>
+              <p class="hero-text"><%= data.hero.subtitle %></p>
             <div class="hero-actions">
               <a href="#courses" class="button button-primary pulse-glow"><%= data.hero.primaryAction %> →</a>
               <a href="#games" class="button button-secondary">🎮 <%= data.hero.secondaryAction %></a>
@@ -22,7 +26,7 @@
           <div class="hero-visual reveal" style="transition-delay:.15s">
             <div class="hero-panel main-panel">
               <div class="panel-top">
-                <span class="panel-pill">🏆 Việt Sử Quest</span>
+                <span class="panel-pill">🏆 Trạm Sử Meta </span>
                 <span class="panel-note">Platform EdTech</span>
               </div>
               <h3>Học Sử theo cách mới</h3>
@@ -349,9 +353,9 @@
       <section id="methods" class="section section-soft">
         <div class="container">
           <div class="section-head centered reveal">
-            <p class="eyebrow">Phương pháp học môn Lịch sử</p>
+            <p class="eyebrow">Học Lịch sử với Trạm Sử Meta</p>
             <h2>Hiểu – Xâu chuỗi – Ghi nhớ – Luyện tập</h2>
-            <p class="section-note center-note">Không chỉ có nội dung — còn dạy học sinh cách học Sử sao cho nhớ lâu và bớt chán.</p>
+            <p class="section-note center-note">Hiểu Lịch sử - Học Lịch Sử không còn chán.</p>
           </div>
           <div class="method-steps">
             <% data.methods.forEach((method, index) => { %>

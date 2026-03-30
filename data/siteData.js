@@ -1,7 +1,8 @@
 module.exports = {
-  brand: { name: 'Trạm Sử Meta', tagline: 'Nền tảng học Lịch sử Việt Nam bằng trải nghiệm' },
+  brand: { name: 'Trạm Sử Meta', tagline: 'Nền tảng học Lịch sử bằng trải nghiệm' },
   hero: {
-    title: 'Nền tảng học Lịch sử đa trải nghiệm',
+    title: 'Dân ta phải biết sử ta',
+    titleLine2: 'Cho tường gốc tích nước nhà Việt Nam.',
     subtitle: 'Học theo lớp 6-12, luyện quiz, chơi game lịch sử, khám phá bản đồ sự kiện và hỏi đáp cùng trợ lý AI trên một giao diện hiện đại.',
     primaryAction: 'Bắt đầu học ngay',
     secondaryAction: 'Khám phá trò chơi'
@@ -27,10 +28,10 @@ module.exports = {
     { grade: 12, level: 'thpt', title: 'Lịch sử 12 – Ôn thi trọng tâm', lessons: 28, quizzes: 84, theme: 'Ôn thi – Vận dụng', description: 'Tối ưu cho học sinh cuối cấp với chuyên đề, ma trận và nhận định.', color: '#ff7a1a', lessonList: ['Hệ thống hóa VN 1919–1945','Kháng chiến chống Pháp (1945–1954)','Chống Mỹ giai đoạn 1954–1965','Chống Mỹ giai đoạn 1965–1975','Đại thắng mùa Xuân 1975','Việt Nam từ 1975 – Đổi mới','Phân tích nguyên nhân thắng lợi','Luyện đề thi THPT Quốc gia'], objectives: ['Ôn tập toàn diện chương trình THPT','Rèn kỹ năng phân tích, nhận định','Luyện đề theo ma trận thi THPT QG'], methods: ['Đề thi thử có giải thích','Flashcard ôn nhanh','Tóm tắt trọng tâm'] }
   ],
   methods: [
-    { step: 'Bước 1', title: 'Hiểu bối cảnh', description: 'Xác định sự kiện diễn ra ở thời gian nào, trong hoàn cảnh nào và liên quan đến lực lượng nào.' },
-    { step: 'Bước 2', title: 'Xâu chuỗi theo timeline', description: 'Ghi nhớ bằng trục thời gian để tránh nhầm lẫn thứ tự giữa các triều đại, phong trào và chiến dịch.' },
-    { step: 'Bước 3', title: 'Gắn với bản đồ và nhân vật', description: 'Liên kết địa điểm, nhân vật tiêu biểu và sự kiện để kiến thức trở nên trực quan hơn.' },
-    { step: 'Bước 4', title: 'Luyện quiz và kể lại', description: 'Tự diễn đạt lại bài học bằng lời của mình, sau đó củng cố bằng câu hỏi nhanh và mini game.' }
+    { step: '', title: 'Hiểu bối cảnh', description: 'Xác định sự kiện diễn ra ở thời gian nào, trong hoàn cảnh nào và liên quan đến lực lượng nào.' },
+    { step: '', title: 'Xâu chuỗi theo timeline', description: 'Ghi nhớ bằng trục thời gian để tránh nhầm lẫn thứ tự giữa các triều đại, phong trào và chiến dịch.' },
+    { step: '', title: 'Gắn với bản đồ và nhân vật', description: 'Liên kết địa điểm, nhân vật tiêu biểu và sự kiện để kiến thức trở nên trực quan hơn.' },
+    { step: '', title: 'Luyện quiz và kể lại', description: 'Tự diễn đạt lại bài học bằng lời của mình, sau đó củng cố bằng câu hỏi nhanh và mini game.' }
   ],
   timeline: [
     { year: '938',  title: 'Chiến thắng Bạch Đằng', description: 'Ngô Quyền đánh bại quân Nam Hán, mở ra thời kỳ độc lập lâu dài.', icon: '⚔️' },
