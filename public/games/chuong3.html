@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đấu trường Meta: La bàn Học giả</title>
+    <style>
+        /* Ép toàn bộ phông chữ về Times New Roman */
+        * {
+            font-family: "Times New Roman", Times, serif !important;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #030201; /* Đen tuyền */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Gói khung game để luôn giữ tỉ lệ 16:9 */
+        #game-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Canvas tự động scale theo màn hình nhưng giữ nguyên độ phân giải nội bộ */
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 1);
+            background-color: #0a0806;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Lớp phủ màn hình chờ (Overlay) */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 3, 2, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .intro-box {
+            background: radial-gradient(circle, #2a1e12 0%, #110b06 100%);
+            border: 4px solid #b5a642;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            max-width: 700px;
+            box-shadow: 0 0 50px rgba(181, 166, 66, 0.3), inset 0 0 30px #000;
+            color: #e0d4b8;
+        }
+
+        .intro-box h1 {
+            color: #f4b41a;
+            font-size: 38px;
+            margin-top: 0;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px #000;
+            border-bottom: 2px solid #5c3a21;
+            padding-bottom: 15px;
+        }
+
+        .intro-box p {
+            font-size: 22px;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            margin-top: 30px;
+            padding: 15px 50px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(180deg, #b5a642 0%, #8b7500 100%);
+            color: #1a110a;
+            border: 2px solid #f4e896;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(180deg, #f4e896 0%, #b5a642 100%);
+            box-shadow: 0 0 20px #f4b41a;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <!-- Canvas được fix cứng ở độ phân giải HD (1280x720) để render siêu chi tiết -->
+        <canvas id="gameCanvas" width="1280" height="720"></canvas>
+        
+        <!-- Màn hình bắt đầu -->
+        <div id="start-screen">
+            <div class="intro-box">
+                <h1>La bàn Học giả</h1>
+                <p><b>Chương 3: Xã hội cổ đại</b></p>
+                <p>Hành trình tìm về cội nguồn văn minh phương Đông và phương Tây. Thầy/Trò hãy rút từng thẻ bài kiến thức và đặt vào đúng trung tâm của nền văn minh tương ứng trên la bàn.</p>
+                <button class="start-btn" id="btn-start">KHỞI ĐỘNG LA BÀN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kho Âm thanh (Audio Assets) -->
+    <audio id="sfx-pickup" src="https://actions.google.com/sounds/v1/office/paper_flip.ogg" preload="auto"></audio>
+    <audio id="sfx-correct" src="https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg" preload="auto"></audio>
+    <audio id="sfx-wrong" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg" preload="auto"></audio>
+    <audio id="sfx-complete" src="https://actions.google.com/sounds/v1/science_fiction/alien_power_up.ogg" preload="auto"></audio>
+    <audio id="sfx-win" src="https://actions.google.com/sounds/v1/foley/brass_bell_series.ogg" preload="auto"></audio>
+
+    <script>
+        // ==========================================
+        // KHỞI TẠO CANVAS VÀ BIẾN TOÀN CỤC
+        // ==========================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const cw = canvas.width;
+        const ch = canvas.height;
+
+        // Tọa độ tâm của La bàn
+        const cx = cw / 2;
+        const cy = ch / 2 - 40; 
+        
+        // Thời gian để animate bánh răng và hạt
+        let time = 0;
+        let animationFrameId;
+
+        // Trạng thái game
+        let gameState = 'START'; // START, PLAYING, WIN
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let cardsPlaced = 0;
+
+        // ==========================================
+        // DỮ LIỆU KIẾN THỨC (CHƯƠNG 3 LỊCH SỬ 6)
+        // ==========================================
+        const civsData = [
+            { id: 'aicap', name: 'Ai Cập', angle: Math.PI*1.5 }, // Góc 12h (Trừ đi Pi/2)
+            { id: 'luongha', name: 'Lưỡng Hà', angle: Math.PI*1.833 }, // Góc 2h
+            { id: 'ando', name: 'Ấn Độ', angle: Math.PI*0.166 }, // Góc 4h
+            { id: 'trungquoc', name: 'Trung Quốc', angle: Math.PI*0.5 }, // Góc 6h
+            { id: 'hylap', name: 'Hy Lạp', angle: Math.PI*0.833 }, // Góc 8h
+            { id: 'lama', name: 'La Mã', angle: Math.PI*1.166 }  // Góc 10h
+        ];
+
+        const rawCards = [
+            // Ai Cập
+            { civ: 'aicap', text: 'Sông Nin' },
+            { civ: 'aicap', text: 'Kim tự tháp' },
+            { civ: 'aicap', text: 'Chữ tượng hình' },
+            // Lưỡng Hà
+            { civ: 'luongha', text: 'Sông Ti-gơ-rơ\n& Ơ-phơ-rát' },
+            { civ: 'luongha', text: 'Chữ hình nêm' },
+            { civ: 'luongha', text: 'Vườn treo\nBa-bi-lon' },
+            // Ấn Độ
+            { civ: 'ando', text: 'Sông Ấn\n& Sông Hằng' },
+            { civ: 'ando', text: 'Chữ Phạn\n(Sanskrit)' },
+            { civ: 'ando', text: 'Phát minh ra\nsố 0' },
+            // Trung Quốc
+            { civ: 'trungquoc', text: 'Hoàng Hà\n& Trường Giang' },
+            { civ: 'trungquoc', text: 'Vạn Lý\nTrường Thành' },
+            { civ: 'trungquoc', text: 'Chữ Giáp cốt' },
+            // Hy Lạp
+            { civ: 'hylap', text: 'Địa hình\nđồi núi & biển' },
+            { civ: 'hylap', text: 'Đền Pác-tê-nông' },
+            { civ: 'hylap', text: 'Định lí\nPi-ta-go' },
+            // La Mã
+            { civ: 'lama', text: 'Bán đảo\nI-ta-li-a' },
+            { civ: 'lama', text: 'Đấu trường\nCô-lô-xê' },
+            { civ: 'lama', text: 'Chữ số La Mã' }
+        ];
+
+        // ==========================================
+        // CÁC LỚP ĐỐI TƯỢNG (CLASSES)
+        // ==========================================
+
+        // 1. Nút Văn minh (Node)
+        class Node {
+            constructor(data) {
+                this.id = data.id;
+                this.name = data.name;
+                // Tính toán vị trí x, y dựa vào góc và khoảng cách từ tâm (radius = 240)
+                this.radius = 240;
+                this.x = cx + Math.cos(data.angle) * this.radius;
+                this.y = cy + Math.sin(data.angle) * this.radius;
+                this.r = 45; // Kích thước vòng tròn node
+                this.progress = 0;
+                this.maxProgress = 3;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // Bóng đổ
+                ctx.shadowColor = 'rgba(0,0,0,0.9)';
+                ctx.shadowBlur = 15;
+
+                // Nền kim loại tối
+                ctx.beginPath();
+                ctx.arc(0, 0, this.r, 0, Math.PI * 2);
+                ctx.fillStyle = '#21150c';
+                ctx.fill();
+
+                // Viền phát sáng nếu hoàn thành
+                ctx.shadowBlur = 0;
+                ctx.lineWidth = 6;
+                if (this.progress === this.maxProgress) {
+                    ctx.strokeStyle = '#f4b41a'; // Vàng rực
+                    ctx.shadowColor = '#f4b41a';
+                    ctx.shadowBlur = 20;
+                    
+                    // Lõi phát sáng nhịp nhàng
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.r - 3, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(244, 180, 26, ${0.1 + 0.15*Math.sin(time*3)})`;
+                    ctx.fill();
+                } else {
+                    ctx.strokeStyle = '#5c3a21'; // Đồng xỉn
+                }
+                ctx.stroke();
+
+                // Chữ tên văn minh
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = this.progress === this.maxProgress ? '#ffffff' : '#d4b895';
+                ctx.font = 'bold 18px "Times New Roman"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // Tách dòng nếu tên quá dài
+                const words = this.name.split(' ');
+                if (words.length > 2) {
+                    ctx.fillText(words[0] + ' ' + words[1], 0, -10);
+                    ctx.fillText(words.slice(2).join(' '), 0, 10);
+                } else {
+                    ctx.fillText(this.name, 0, 0);
+                }
+
+                // Vẽ 3 viên ngọc hiển thị tiến độ (Progress gems)
+                for(let i=0; i<3; i++) {
+                    const gx = (i - 1) * 16;
+                    const gy = 30;
+                    ctx.beginPath();
+                    ctx.arc(gx, gy, 5, 0, Math.PI*2);
+                    if (i < this.progress) {
+                        ctx.fillStyle = '#00ffcc'; // Sáng lục lam
+                        ctx.shadowColor = '#00ffcc';
+                        ctx.shadowBlur = 10;
+                    } else {
+                        ctx.fillStyle = '#0a0a0a'; // Tối
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = '#8b5a2b';
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+
+        // 2. Thẻ bài (Card)
+        class Card {
+            constructor(data) {
+                this.civ = data.civ;
+                this.text = data.text;
+                this.w = 140;
+                this.h = 200;
+                // Vị trí xuất phát (Bộ bài ở góc dưới giữa)
+                this.deckX = cx;
+                this.deckY = ch - 80;
+                this.x = this.deckX;
+                this.y = this.deckY;
+                this.scale = 1;
+            }
+
+            draw(isTopCard) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(this.scale, this.scale);
+
+                // Đổ bóng (Thẻ đang cầm sẽ đổ bóng lớn hơn)
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = isTopCard ? 25 : 8;
+                ctx.shadowOffsetY = isTopCard ? 15 : 2;
+
+                // Nền thẻ (Parchment/Giấy da)
+                ctx.fillStyle = '#eedcb1';
+                ctx.beginPath();
+                if(ctx.roundRect) {
+                    ctx.roundRect(-this.w/2, -this.h/2, this.w, this.h, 8);
+                } else {
+                    ctx.rect(-this.w/2, -this.h/2, this.w, this.h); // Fallback
+                }
+                ctx.fill();
+
+                // Khung viền hoa văn trang trí
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#5c3a21';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(-this.w/2 + 8, -this.h/2 + 8, this.w - 16, this.h - 16);
+                ctx.strokeStyle = '#c4a678';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-this.w/2 + 12, -this.h/2 + 12, this.w - 24, this.h - 24);
+
+                if (isTopCard) {
+                    // Chữ nội dung thẻ
+                    ctx.fillStyle = '#3e200c';
+                    ctx.font = 'bold 22px "Times New Roman"';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    // Hàm in chữ xuống dòng tự động
+                    const lines = this.text.split('\n');
+                    let currentY = -20;
+                    for (let line of lines) {
+                        ctx.fillText(line, 0, currentY);
+                        currentY += 28;
+                    }
+
+                    // Biểu tượng sao ở đáy thẻ
+                    ctx.fillStyle = '#8b5a2b';
+                    ctx.font = '24px Arial';
+                    ctx.fillText('✦', 0, 70);
+                }
+                ctx.restore();
+            }
+        }
+
+        // 3. Hệ thống Hạt bụi/Hiệu ứng (Particle)
+        class Particle {
+            constructor(x, y, color, type) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.type = type; // 'spark', 'dust', 'trail'
+                this.life = 1.0;
+                
+                if (type === 'spark' || type === 'wrong') {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 6 + 2;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.size = Math.random() * 4 + 2;
+                    this.decay = Math.random() * 0.03 + 0.02;
+                } else if (type === 'dust') {
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3 - 0.1; // bay nhẹ lên
+                    this.size = Math.random() * 2 + 0.5;
+                    this.decay = Math.random() * 0.003 + 0.001;
+                    this.life = Math.random(); // bắt đầu ngẫu nhiên
+                } else if (type === 'trail') {
+                    this.vx = 0;
+                    this.vy = 0;
+                    this.size = Math.random() * 5 + 3;
+                    this.decay = 0.05; // tan biến cực nhanh
+                }
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.type === 'spark' || this.type === 'wrong') {
+                    this.vy += 0.15; // Lực hấp dẫn kéo tia lửa rơi xuống
+                }
+                this.life -= this.decay;
+            }
+            draw() {
+                if (this.life <= 0) return;
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // KHỞI TẠO MẢNG LƯU TRỮ TRONG GAME
+        // ==========================================
+        let nodes = [];
+        let deck = [];
+        let activeCard = null;
+        let particles = [];
+
+        function initGame() {
+            nodes = civsData.map(data => new Node(data));
+            
+            // Tạo bài và Trộn ngẫu nhiên (Shuffle)
+            let tempCards = rawCards.map(data => new Card(data));
+            for (let i = tempCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tempCards[i], tempCards[j]] = [tempCards[j], tempCards[i]];
+            }
+            deck = tempCards;
+            activeCard = deck.pop(); // Rút lá đầu tiên lên tay
+            cardsPlaced = 0;
+            particles = [];
+            time = 0;
+        }
+
+        // ==========================================
+        // CÁC HÀM VẼ (RENDER) CHI TIẾT
+        // ==========================================
+
+        // Vẽ bánh răng nền
+        function drawGear(x, y, radius, teeth, angle, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            const innerRadius = radius * 0.85;
+            for(let i=0; i<teeth; i++) {
+                const a = (i * 2 * Math.PI) / teeth;
+                const nextA = ((i+1) * 2 * Math.PI) / teeth;
+                const halfA = a + (nextA - a) / 2;
+                ctx.lineTo(Math.cos(a)*radius, Math.sin(a)*radius);
+                ctx.lineTo(Math.cos(halfA)*radius, Math.sin(halfA)*radius);
+                ctx.lineTo(Math.cos(halfA)*innerRadius, Math.sin(halfA)*innerRadius);
+                ctx.lineTo(Math.cos(nextA)*innerRadius, Math.sin(nextA)*innerRadius);
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // Lỗ rỗng ở giữa bánh răng
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            
+            ctx.strokeStyle = '#111';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Vẽ Cấu trúc La bàn trung tâm
+        function drawAstrolabeBase() {
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // Mảng màu gradient đồng thau
+            const brassGrad = ctx.createLinearGradient(-150, -150, 150, 150);
+            brassGrad.addColorStop(0, '#b5a642');
+            brassGrad.addColorStop(0.5, '#f4e896');
+            brassGrad.addColorStop(1, '#665200');
+
+            // Đổ bóng lớn
+            ctx.shadowColor = 'rgba(0,0,0,1)';
+            ctx.shadowBlur = 40;
+
+            // Vòng kim loại ngoài cùng
+            ctx.beginPath();
+            ctx.arc(0, 0, 160, 0, Math.PI*2);
+            ctx.fillStyle = brassGrad;
+            ctx.fill();
+            
+            // Đĩa nền tối bên trong
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(0, 0, 140, 0, Math.PI*2);
+            ctx.fillStyle = '#110b06';
+            ctx.fill();
+
+            // Vạch chia độ (như thước đo góc)
+            ctx.strokeStyle = '#b5a642';
+            ctx.lineWidth = 2;
+            for(let i=0; i<72; i++) {
+                const a = i * 5 * Math.PI / 180;
+                const len = (i % 6 === 0) ? 15 : 5;
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(a)*125, Math.sin(a)*125);
+                ctx.lineTo(Math.cos(a)*(125+len), Math.sin(a)*(125+len));
+                ctx.stroke();
+            }
+
+            // Vòng tròn quay mô phỏng bản đồ hoàng đạo
+            ctx.save();
+            ctx.rotate(time * 0.2);
+            ctx.strokeStyle = 'rgba(181, 166, 66, 0.4)';
+            ctx.lineWidth = 1;
+            // Vẽ các đường chéo lục giác ma thuật
+            ctx.beginPath();
+            for(let i=0; i<6; i++) {
+                const a1 = i * Math.PI/3;
+                const a2 = (i+2) * Math.PI/3;
+                ctx.moveTo(Math.cos(a1)*110, Math.sin(a1)*110);
+                ctx.lineTo(Math.cos(a2)*110, Math.sin(a2)*110);
+            }
+            ctx.stroke();
+
+            // Ký tự số La Mã trang trí
+            ctx.fillStyle = 'rgba(181, 166, 66, 0.5)';
+            ctx.font = '16px "Times New Roman"';
+            ctx.textAlign = 'center';
+            const romans = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+            for(let i=0; i<12; i++) {
+                const a = i * Math.PI/6 - Math.PI/2; // Bắt đầu từ 12h
+                ctx.save();
+                ctx.translate(Math.cos(a)*90, Math.sin(a)*90);
+                ctx.rotate(a + Math.PI/2);
+                ctx.fillText(romans[i], 0, 6);
+                ctx.restore();
+            }
+            ctx.restore(); // Kết thúc vòng quay
+
+            // Lõi pha lê trung tâm
+            ctx.beginPath();
+            ctx.arc(0, 0, 35, 0, Math.PI*2);
+            const coreGrad = ctx.createRadialGradient(0,0,5, 0,0,35);
+            coreGrad.addColorStop(0, '#ffffff');
+            coreGrad.addColorStop(0.3, '#00ffff');
+            coreGrad.addColorStop(1, '#003333');
+            ctx.fillStyle = coreGrad;
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // Vẽ các đường ống năng lượng nối từ Tâm đến các Node
+        function drawConnections() {
+            ctx.lineWidth = 5;
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(node.x, node.y);
+                
+                const grad = ctx.createLinearGradient(cx, cy, node.x, node.y);
+                grad.addColorStop(0, '#8b5a2b');
+                if (node.progress === node.maxProgress) {
+                    grad.addColorStop(1, '#f4b41a'); // Đường truyền sáng rực lên nếu xong
+                    ctx.shadowColor = '#f4b41a';
+                    ctx.shadowBlur = 10;
+                } else {
+                    grad.addColorStop(1, '#3e200c'); // Đường tối nếu chưa xong
+                    ctx.shadowBlur = 0;
+                }
+                ctx.strokeStyle = grad;
+                ctx.stroke();
+            });
+            ctx.shadowBlur = 0; // reset
+        }
+
+        // ==========================================
+        // VÒNG LẶP GAME CHÍNH (GAME LOOP)
+        // ==========================================
+        function update() {
+            time += 0.05;
+
+            // Xử lý Hạt bụi nền (Ambient Dust)
+            if (particles.length < 100 && Math.random() < 0.2) {
+                particles.push(new Particle(Math.random()*cw, Math.random()*ch, '#e0d4b8', 'dust'));
+            }
+
+            // Xử lý tạo vệt sáng khi kéo thẻ (Trail particles)
+            if (isDragging && activeCard) {
+                if (Math.random() > 0.4) {
+                    particles.push(new Particle(activeCard.x, activeCard.y, 'rgba(244, 180, 26, 0.6)', 'trail'));
+                }
+            }
+
+            // Cập nhật sinh tử của mảng particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Hiệu ứng hút thẻ bài về chỗ cũ (Lerp Animation)
+            if (!isDragging && activeCard) {
+                activeCard.x += (activeCard.deckX - activeCard.x) * 0.15;
+                activeCard.y += (activeCard.deckY - activeCard.y) * 0.15;
+                activeCard.scale += (1 - activeCard.scale) * 0.15;
+            } else if (isDragging && activeCard) {
+                // Phóng to nhẹ khi đang cầm
+                activeCard.scale += (1.1 - activeCard.scale) * 0.2;
+            }
+        }
+
+        function draw() {
+            // 1. Dọn dẹp canvas và vẽ nền vũ trụ/văn bản cổ
+            ctx.fillStyle = '#050403';
+            ctx.fillRect(0, 0, cw, ch);
+            
+            // Nebula chìm
+            const neb1 = ctx.createRadialGradient(cw*0.2, ch*0.2, 50, cw*0.2, ch*0.2, 600);
+            neb1.addColorStop(0, 'rgba(60, 40, 20, 0.2)');
+            neb1.addColorStop(1, 'transparent');
+            ctx.fillStyle = neb1;
+            ctx.fillRect(0, 0, cw, ch);
+
+            // 2. Vẽ Bánh răng nền (Background Gears)
+            drawGear(cx - 150, cy - 100, 180, 20, time * 0.05, '#1e140d');
+            drawGear(cx + 200, cy + 100, 220, 24, -time * 0.03, '#140c07');
+            drawGear(cx, cy, 300, 30, time * 0.015, '#0a0603');
+
+            // 3. Vẽ cấu trúc La Bàn
+            drawConnections();
+            drawAstrolabeBase();
+            nodes.forEach(n => n.draw());
+
+            // 4. Vẽ Bộ bài giả ở dưới cùng (chỉ là hình ảnh tạo độ sâu)
+            if (deck.length > 0) {
+                let fakeCard = new Card({civ:'', text:''});
+                fakeCard.y += 10;
+                fakeCard.draw(false);
+                fakeCard.y -= 5;
+                fakeCard.draw(false);
+            }
+
+            // 5. Vẽ hạt (Particles) ở lớp dưới thẻ
+            particles.forEach(p => p.draw());
+
+            // 6. Vẽ Thẻ bài đang cầm (Active Card)
+            if (activeCard) {
+                activeCard.draw(true);
+            }
+
+            // 7. Vẽ UI Giao diện (Tiêu đề, Điểm số)
+            ctx.fillStyle = '#f4b41a';
+            ctx.font = 'bold 32px "Times New Roman"';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#000';
+            ctx.shadowBlur = 10;
+            ctx.fillText("LA BÀN HỌC GIẢ", cw/2, 40);
+            
+            ctx.fillStyle = '#e0d4b8';
+            ctx.font = '20px "Times New Roman"';
+            ctx.fillText(`Tiến trình: ${cardsPlaced} / 18`, cw/2, 75);
+            ctx.shadowBlur = 0;
+
+            // 8. Màn hình chiến thắng
+            if (gameState === 'WIN') {
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.fillRect(0, 0, cw, ch);
+
+                ctx.fillStyle = '#f4e4c1';
+                ctx.strokeStyle = '#b5a642';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.roundRect(cw/2 - 300, ch/2 - 150, 600, 300, 15);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#3e200c';
+                ctx.font = 'bold 36px "Times New Roman"';
+                ctx.textAlign = 'center';
+                ctx.fillText("CHÚC MỪNG!", cw/2, ch/2 - 50);
+                
+                ctx.font = '24px "Times New Roman"';
+                ctx.fillText("Thầy/Trò đã hoàn thành Bản đồ Văn minh cổ đại.", cw/2, ch/2 + 10);
+                ctx.fillText("Toàn bộ kiến thức đã được lưu trữ vĩnh viễn!", cw/2, ch/2 + 50);
+            }
+        }
+
+        function renderLoop() {
+            if (gameState !== 'START') {
+                update();
+                draw();
+            }
+            animationFrameId = requestAnimationFrame(renderLoop);
+        }
+
+        // ==========================================
+        // XỬ LÝ TƯƠNG TÁC (CHUỘT & CẢM ỨNG)
+        // ==========================================
+
+        // Lấy tọa độ chính xác bất chấp màn hình scale
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let cx = e.clientX;
+            let cy = e.clientY;
+            if(e.touches && e.touches.length > 0) {
+                cx = e.touches[0].clientX;
+                cy = e.touches[0].clientY;
+            }
+            return {
+                x: (cx - rect.left) * scaleX,
+                y: (cy - rect.top) * scaleY
+            };
+        }
+
+        // Phát âm thanh an toàn
+        function playSound(id) {
+            const audio = document.getElementById(id);
+            if(audio) {
+                audio.currentTime = 0;
+                audio.play().catch(()=>{});
+            }
+        }
+
+        // Sự kiện nhấn (MouseDown / TouchStart)
+        function handleDown(e) {
+            if(gameState !== 'PLAYING' || !activeCard) return;
+            const pos = getPos(e);
+            
+            // Kiểm tra xem click có nằm trong khung thẻ bài không
+            if (pos.x > activeCard.x - activeCard.w/2 && pos.x < activeCard.x + activeCard.w/2 &&
+                pos.y > activeCard.y - activeCard.h/2 && pos.y < activeCard.y + activeCard.h/2) {
+                isDragging = true;
+                dragOffsetX = pos.x - activeCard.x;
+                dragOffsetY = pos.y - activeCard.y;
+                playSound('sfx-pickup');
+            }
+        }
+
+        // Sự kiện di chuyển (MouseMove / TouchMove)
+        function handleMove(e) {
+            if(!isDragging || !activeCard) return;
+            e.preventDefault(); // Ngăn cuộn trang trên mobile
+            const pos = getPos(e);
+            activeCard.x = pos.x - dragOffsetX;
+            activeCard.y = pos.y - dragOffsetY;
+        }
+
+        // Sự kiện nhả tay (MouseUp / TouchEnd)
+        function handleUp(e) {
+            if(!isDragging || !activeCard) return;
+            isDragging = false;
+            
+            // Tìm xem thẻ được thả vào Node nào
+            let droppedNode = null;
+            for (let node of nodes) {
+                // Tính khoảng cách từ tâm thẻ đến tâm node
+                const dx = activeCard.x - node.x;
+                const dy = activeCard.y - node.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < node.r + 50) { // Vùng nhận diện rộng một chút cho dễ thả
+                    droppedNode = node;
+                    break;
+                }
+            }
+
+            if (droppedNode) {
+                if (activeCard.civ === droppedNode.id) {
+                    // => ĐÚNG VĂN MINH
+                    playSound('sfx-correct');
+                    droppedNode.progress++;
+                    cardsPlaced++;
+
+                    // Bắn pháo hoa xanh/vàng
+                    for(let i=0; i<30; i++) {
+                        particles.push(new Particle(droppedNode.x, droppedNode.y, '#00ffcc', 'spark'));
+                        particles.push(new Particle(droppedNode.x, droppedNode.y, '#f4b41a', 'spark'));
+                    }
+
+                    if (droppedNode.progress === droppedNode.maxProgress) {
+                        playSound('sfx-complete');
+                    }
+
+                    // Rút thẻ mới
+                    if (deck.length > 0) {
+                        activeCard = deck.pop();
+                    } else {
+                        activeCard = null;
+                        setTimeout(() => {
+                            gameState = 'WIN';
+                            playSound('sfx-win');
+                        }, 1000);
+                    }
+                } else {
+                    // => SAI VĂN MINH
+                    playSound('sfx-wrong');
+                    // Bắn pháo đỏ
+                    for(let i=0; i<20; i++) {
+                        particles.push(new Particle(activeCard.x, activeCard.y, '#ff4444', 'wrong'));
+                    }
+                    // activeCard sẽ tự động trôi về vị trí cũ nhờ hàm lerp trong update()
+                }
+            }
+        }
+
+        // Đăng ký Event
+        canvas.addEventListener('mousedown', handleDown);
+        canvas.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleUp);
+
+        canvas.addEventListener('touchstart', handleDown, {passive: false});
+        canvas.addEventListener('touchmove', handleMove, {passive: false});
+        window.addEventListener('touchend', handleUp);
+
+        // Nút Bắt đầu Game
+        document.getElementById('btn-start').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
+            initGame();
+            gameState = 'PLAYING';
+            // Phát âm thanh giả để unlock audio context trên trình duyệt
+            const au = document.getElementById('sfx-pickup');
+            au.volume = 0; au.play().then(()=>{ au.pause(); au.volume=1; }).catch(()=>{});
+        });
+
+        // Chạy vòng lặp nền
+        requestAnimationFrame(renderLoop);
+
+    </script>
+</body>
+</html>

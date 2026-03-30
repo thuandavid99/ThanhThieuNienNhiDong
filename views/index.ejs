@@ -447,6 +447,183 @@
           </div>
         </div>
       </section>
+      <section id="cong-dong" class="section" style="background:#fff8f3; overflow:hidden;">
+  <div class="container">
+    <div class="section-head centered reveal">
+      <p class="eyebrow">CỘNG ĐỒNG TRẠM SỬ META</p>
+      <h2>Học sinh nói gì về chúng mình?</h2>
+      <p class="section-note center-note">Những trải nghiệm thật từ học sinh trên cả nước.</p>
+    </div>
+  </div>
+
+  <!-- Băng chuyền ảnh hàng 1 - chạy phải -->
+  <div class="gallery-track-wrap">
+    <div class="gallery-track track-left">
+      <% [
+        { icon: '📸', quote: 'Giao diện đẹp quá!' },
+        { icon: '🖥️', quote: 'Bản đồ tương tác thú vị!' },
+        { icon: '👥', quote: 'Học nhóm hiệu quả hơn!' },
+        { icon: '😊', quote: 'Dễ dùng, dễ nhớ bài!' },
+        { icon: '🎮', quote: 'Game lịch sử hay lắm!' },
+        { icon: '📱', quote: 'Dùng điện thoại cũng được!' },
+        { icon: '🏆', quote: 'Em đạt điểm cao nhờ web!' },
+        { icon: '✨', quote: 'Mindmap rất trực quan!' },
+        { icon: '📸', quote: 'Giao diện đẹp quá!' },
+        { icon: '🖥️', quote: 'Bản đồ tương tác thú vị!' }
+      ].forEach(item => { %>
+        <div class="gallery-item">
+          <div class="gallery-icon"><%= item.icon %></div>
+          <div class="gallery-hover-quote">"<%= item.quote %>"</div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Băng chuyền ảnh hàng 2 - chạy trái -->
+  <div class="gallery-track-wrap" style="margin-top:1rem;">
+    <div class="gallery-track track-right">
+      <% [
+        { icon: '🗺️', quote: 'Timeline dễ nhớ hơn!' },
+        { icon: '💡', quote: 'Chatbot giải đáp nhanh!' },
+        { icon: '📚', quote: 'Tài liệu phong phú!' },
+        { icon: '🎯', quote: 'Quiz ôn bài rất hay!' },
+        { icon: '🌟', quote: 'Web xịn nhất em từng dùng!' },
+        { icon: '🤩', quote: 'Học sử không còn chán!' },
+        { icon: '🗺️', quote: 'Timeline dễ nhớ hơn!' },
+        { icon: '💡', quote: 'Chatbot giải đáp nhanh!' },
+        { icon: '📚', quote: 'Tài liệu phong phú!' },
+        { icon: '🎯', quote: 'Quiz ôn bài rất hay!' }
+      ].forEach(item => { %>
+        <div class="gallery-item">
+          <div class="gallery-icon"><%= item.icon %></div>
+          <div class="gallery-hover-quote">"<%= item.quote %>"</div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Review cards -->
+  <div class="container" style="margin-top:3rem;">
+    <div class="review-carousel" id="reviewCarousel">
+      <% [
+        { initial: '👩', name: 'Học sinh A', info: 'Lớp 6, Trường THCS...', stars: 5, text: 'Web siêu đẹp! Nền kem giúp em không bị mỏi mắt khi đọc lâu. Các hiệu ứng mượt mà, em lướt cả buổi không chán.' },
+        { initial: '👦', name: 'Học sinh B', info: 'Lớp 10, Trường THPT...', stars: 5, text: 'Trước đây em ghét học sử vì nhiều mốc thời gian. Nhưng trên web có dòng thời gian tương tác trực quan, em nhớ nhanh hơn hẳn.' },
+        { initial: '👧', name: 'Học sinh C', info: 'Lớp 12, Trường THPT...', stars: 5, text: 'Tính năng Bản đồ Di tích lịch sử là hay nhất! Em có thể xem thêm ảnh về địa điểm, cảm giác như được tham quan thật.' }
+      ].forEach((r, i) => { %>
+        <div class="review-card <%= i === 0 ? 'active' : '' %>">
+          <div class="review-avatar"><%= r.initial %></div>
+          <div class="review-body">
+            <div class="review-stars"><%= '⭐'.repeat(r.stars) %></div>
+            <p class="review-text">"<%= r.text %>"</p>
+            <div class="review-author">
+              <strong><%= r.name %></strong>
+              <small><%= r.info %></small>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    <div class="review-dots" id="reviewDots">
+      <span class="dot active" onclick="goReview(0)"></span>
+      <span class="dot" onclick="goReview(1)"></span>
+      <span class="dot" onclick="goReview(2)"></span>
+    </div>
+    <div style="text-align:center; margin-top:2rem;">
+      <a href="#" class="button button-secondary">💬 Gửi phản hồi của bạn</a>
+    </div>
+  </div>
+</section>
+
+<style>
+/* Gallery track */
+.gallery-track-wrap { overflow: hidden; width: 100%; }
+.gallery-track {
+  display: flex; gap: 1rem; padding: 1rem 0;
+  width: max-content;
+}
+.track-left { animation: scrollLeft 30s linear infinite; }
+.track-right { animation: scrollRight 30s linear infinite; }
+@keyframes scrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes scrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.gallery-track-wrap:hover .gallery-track { animation-play-state: paused; }
+
+.gallery-item {
+  width: 160px; height: 160px; border-radius: 16px;
+  background: #fff; border: 1.5px solid #f0e8e0;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; flex-shrink: 0;
+  position: relative; overflow: hidden; cursor: pointer;
+  transition: transform .2s;
+}
+.gallery-item:hover { transform: scale(1.05); }
+.gallery-icon { font-size: 3rem; }
+.gallery-hover-quote {
+  position: absolute; inset: 0;
+  background: rgba(255,122,26,0.92);
+  color: #fff; font-size: .8rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 1rem;
+  opacity: 0; transition: opacity .25s;
+}
+.gallery-item:hover .gallery-hover-quote { opacity: 1; }
+
+/* Review carousel */
+.review-carousel { position: relative; min-height: 160px; }
+.review-card {
+  display: none; align-items: center; gap: 1.5rem;
+  background: #fff; border: 1.5px solid #f0e8e0;
+  border-radius: 20px; padding: 1.5rem 2rem;
+  max-width: 700px; margin: 0 auto;
+  animation: fadeInUp .4s ease;
+}
+.review-card.active { display: flex; }
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.review-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: #ff7a1a22; font-size: 2rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; border: 2px solid #ff7a1a44;
+}
+.review-text { color: #444; font-style: italic; margin: .5rem 0; line-height: 1.6; }
+.review-author strong { display: block; color: #1a1a1a; }
+.review-author small { color: #aaa; }
+.review-dots {
+  display: flex; justify-content: center; gap: .5rem; margin-top: 1rem;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #f0e8e0; cursor: pointer; transition: background .2s;
+}
+.dot.active { background: #ff7a1a; }
+</style>
+
+<script>
+// Auto carousel review
+let currentReview = 0;
+const reviews = document.querySelectorAll('.review-card');
+const dots = document.querySelectorAll('.dot');
+
+function goReview(n) {
+  reviews[currentReview].classList.remove('active');
+  dots[currentReview].classList.remove('active');
+  currentReview = n;
+  reviews[currentReview].classList.add('active');
+  dots[currentReview].classList.add('active');
+}
+
+setInterval(() => {
+  goReview((currentReview + 1) % reviews.length);
+}, 4500);
+</script>
       <section id="map" class="section">
         <div class="container map-layout">
           <div class="reveal">
