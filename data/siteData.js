@@ -31,7 +31,7 @@ module.exports = {
     { step: '', title: 'Hiểu bối cảnh', description: 'Xác định sự kiện diễn ra ở thời gian nào, trong hoàn cảnh nào và liên quan đến lực lượng nào.' },
     { step: '', title: 'Xâu chuỗi theo timeline', description: 'Ghi nhớ bằng trục thời gian để tránh nhầm lẫn thứ tự giữa các triều đại, phong trào và chiến dịch.' },
     { step: '', title: 'Gắn với bản đồ và nhân vật', description: 'Liên kết địa điểm, nhân vật tiêu biểu và sự kiện để kiến thức trở nên trực quan hơn.' },
-    { step: '', title: 'Luyện quiz và kể lại', description: 'Tự diễn đạt lại bài học bằng lời của mình, sau đó củng cố bằng câu hỏi nhanh và mini game.' }
+    { step: '', title: 'Luyện quiz', description: ' Củng cố bằng câu hỏi nhanh và mini game.' }
   ],
   timeline: [
     { year: '938',  title: 'Chiến thắng Bạch Đằng', description: 'Ngô Quyền đánh bại quân Nam Hán, mở ra thời kỳ độc lập lâu dài.', icon: '⚔️' },
