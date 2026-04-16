@@ -522,6 +522,24 @@ function callChat(msg) {
   });
 }
 </script>
-
+<audio id="welcome-audio" src="/audio/khoahoc-voiceai.mp3" preload="auto"></audio>
+<script>
+  (function() {
+    var PLAYED_KEY = 'welcomeAudioPlayed';
+    var audio = document.getElementById('welcome-audio');
+    if (!sessionStorage.getItem(PLAYED_KEY)) {
+      sessionStorage.setItem(PLAYED_KEY, '1');
+      setTimeout(function() {
+        audio.volume = 0.85;
+        audio.play().catch(function() {
+          document.addEventListener('click', function playOnce() {
+            audio.play();
+            document.removeEventListener('click', playOnce);
+          }, { once: true });
+        });
+      }, 800);
+    }
+  })();
+</script>
 </body>
 </html>
