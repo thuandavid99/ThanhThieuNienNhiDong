@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ngọn Lửa Bình Minh – Chương 2</title>
+
+<!-- MediaPipe (CDN cho phép theo đề bài) -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<style>
+* {
+  font-family: "Times New Roman", Times, serif !important;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+body {
+  margin: 0; padding: 0;
+  background: #050301;
+  display: flex; justify-content: center; align-items: center;
+  height: 100vh; overflow: hidden;
+}
+#game-wrapper {
+  position: relative;
+  width: 100vw; height: 100vh;
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* ---- Canvas ---- */
+#gameCanvas {
+  max-width: 100%; max-height: 100%;
+  aspect-ratio: 1200 / 750;
+  display: block;
+  box-shadow: 0 0 120px rgba(0,0,0,0.98);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* ---- Camera preview ---- */
+#cam-feed {
+  position: absolute;
+  width: 1px; height: 1px; opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- Start Screen ---- */
+#start-screen {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, #0f0704 0%, #020100 100%);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  z-index: 20;
+}
+.cave-frame {
+  position: relative;
+  background: linear-gradient(160deg, #1a0b04 0%, #0c0502 100%);
+  border: 4px solid #5a3010;
+  border-radius: 16px;
+  padding: 46px 60px 40px;
+  max-width: 780px; width: 90%;
+  text-align: center;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.8),
+              0 0 60px rgba(200,80,10,0.15),
+              0 30px 80px rgba(0,0,0,0.9);
+  overflow: hidden;
+}
+.cave-frame::before {
+  content:'';
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(
+    -45deg, transparent, transparent 8px,
+    rgba(0,0,0,0.12) 8px, rgba(0,0,0,0.12) 9px
+  );
+  pointer-events:none;
+}
+.chapter-badge {
+  font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+  color: #a05020; margin-bottom: 8px;
+}
+.cave-title {
+  font-size: 46px; font-weight: bold;
+  color: #f07010;
+  text-shadow: 0 0 30px rgba(240,100,10,0.7), 0 0 60px rgba(200,60,0,0.4);
+  margin: 0 0 6px; letter-spacing: 3px;
+  animation: flicker 3s infinite;
+}
+@keyframes flicker {
+  0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.85} 96%{opacity:1} 97%{opacity:0.9}
+}
+.cave-sub { color: #7a4020; font-size: 16px; margin-bottom: 24px; letter-spacing: 2px; }
+.divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, #7a3010, transparent);
+  margin: 18px 0;
+}
+.cave-desc { color: #c8a070; font-size: 21px; line-height: 1.7; margin: 0; }
+.cave-desc b { color: #f09040; }
+.how-to {
+  margin-top: 18px; padding: 16px 22px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #5a2808; border-radius: 8px;
+  color: #d09060; font-size: 18px; line-height: 1.65;
+}
+.how-to .icon { font-size: 22px; }
+.start-btn {
+  margin-top: 28px; padding: 16px 56px;
+  font-size: 24px; font-weight: bold;
+  background: linear-gradient(180deg, #d06020 0%, #801808 100%);
+  color: #ffe0c0;
+  border: 3px solid #f0b060;
+  border-radius: 8px; cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 30px rgba(200,60,0,0.5), inset 0 1px 0 rgba(255,200,100,0.25);
+  letter-spacing: 2px; text-transform: uppercase;
+  position: relative; z-index: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+}
+.start-btn:hover {
+  transform: translateY(-4px);
+  background: linear-gradient(180deg, #e07030 0%, #a02010 100%);
+  box-shadow: 0 16px 50px rgba(240,100,10,0.6), inset 0 1px 0 rgba(255,220,120,0.3);
+}
+.start-btn:active { transform: translateY(0); }
+
+/* ---- Quiz overlay ---- */
+#quiz-overlay {
+  position: absolute; inset: 0;
+  display: none;
+  justify-content: center; align-items: center;
+  z-index: 15;
+  background: rgba(0,0,0,0.0);
+  pointer-events: none;
+}
+#quiz-overlay.active {
+  display: flex;
+  pointer-events: all;
+}
+.quiz-card {
+  background: linear-gradient(160deg, #1e0d05 0%, #0e0602 100%);
+  border: 4px solid #8b4010;
+  border-radius: 14px;
+  padding: 36px 44px;
+  max-width: 740px; width: 88%;
+  box-shadow: 0 0 80px rgba(200,70,0,0.3), inset 0 0 60px rgba(0,0,0,0.6);
+  position: relative; overflow: hidden;
+  animation: slideIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideIn {
+  from { transform: translateY(40px) scale(0.95); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.quiz-card::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(200,70,0,0.12), transparent 70%);
+  pointer-events:none;
+}
+.quiz-header {
+  color: #f07020; font-size: 15px; letter-spacing: 3px;
+  text-transform: uppercase; margin-bottom: 10px; text-align: center;
+}
+.quiz-q {
+  color: #f0e0c0; font-size: 26px; font-weight: bold;
+  line-height: 1.55; text-align: center; margin-bottom: 28px;
+}
+.quiz-options {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.quiz-opt {
+  background: linear-gradient(160deg, #2e1008 0%, #180800 100%);
+  border: 2px solid #6a3010;
+  border-radius: 10px; padding: 14px 18px;
+  color: #e0b888; font-size: 19px;
+  cursor: pointer; transition: all 0.22s;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.quiz-opt:hover {
+  border-color: #f07020; color: #ffe0b0;
+  background: linear-gradient(160deg, #401808 0%, #280e04 100%);
+  box-shadow: 0 0 20px rgba(200,70,0,0.3);
+  transform: translateY(-2px);
+}
+.quiz-opt .opt-key {
+  display: inline-block; width: 28px; height: 28px;
+  background: #8b3010; border-radius: 50%;
+  text-align: center; line-height: 28px;
+  font-weight: bold; font-size: 15px; color: #ffe0b0;
+  margin-right: 10px; flex-shrink: 0;
+}
+.quiz-opt.correct {
+  border-color: #40e060; background: linear-gradient(160deg, #0a3010 0%, #051808 100%);
+  color: #80ff90; animation: pulse-green 0.4s;
+}
+.quiz-opt.wrong {
+  border-color: #e02020; background: linear-gradient(160deg, #300808 0%, #180404 100%);
+  color: #ff8080; animation: shake-h 0.4s;
+}
+@keyframes pulse-green {
+  0%,100%{box-shadow:0 0 20px rgba(50,220,80,0.4)}
+  50%{box-shadow:0 0 50px rgba(50,220,80,0.9)}
+}
+@keyframes shake-h {
+  0%,100%{transform:none}
+  25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}
+}
+.quiz-hint {
+  text-align: center; color: #805030; font-size: 15px;
+  margin-top: 20px; font-style: italic;
+}
+
+/* ---- Win overlay ---- */
+#win-overlay {
+  position: absolute; inset: 0;
+  display: none;
+  justify-content: center; align-items: center;
+  z-index: 18;
+  background: rgba(0,0,0,0);
+  pointer-events: none;
+}
+#win-overlay.active { display: flex; pointer-events: all; }
+.win-card {
+  text-align: center; padding: 48px 60px;
+  animation: winReveal 0.8s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes winReveal {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.win-title {
+  font-size: 68px; font-weight: bold; color: #ffb030;
+  text-shadow: 0 0 40px rgba(255,150,0,0.9), 0 0 80px rgba(255,80,0,0.5);
+  margin: 0; animation: glow 2s infinite;
+}
+@keyframes glow {
+  0%,100%{text-shadow:0 0 40px rgba(255,150,0,0.9),0 0 80px rgba(255,80,0,0.5)}
+  50%{text-shadow:0 0 60px rgba(255,200,50,1),0 0 120px rgba(255,100,0,0.8)}
+}
+.win-sub { color: #f0d090; font-size: 26px; margin: 14px 0 0; }
+.win-detail { color: #c09060; font-size: 18px; margin-top: 10px; line-height: 1.6; }
+.replay-btn {
+  margin-top: 28px; padding: 14px 48px;
+  font-size: 22px; font-weight: bold;
+  background: linear-gradient(180deg, #f08020 0%, #903010 100%);
+  color: #fff0d0; border: 3px solid #ffc060;
+  border-radius: 8px; cursor: pointer; transition: all 0.3s;
+  box-shadow: 0 8px 30px rgba(200,80,0,0.5);
+  letter-spacing: 2px;
+}
+.replay-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(240,120,0,0.6); }
+
+/* ---- Camera pip ---- */
+#cam-pip {
+  position: absolute;
+  bottom: 12px; left: 12px;
+  width: 180px; height: 120px;
+  border: 2px solid #6a3010;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  z-index: 12;
+  display: none;
+  background: #000;
+}
+#cam-pip video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+#cam-pip .cam-label {
+  position: absolute; bottom: 4px; left: 0; right: 0;
+  text-align: center; font-size: 11px; color: #c08050;
+  background: rgba(0,0,0,0.6); padding: 2px 0;
+}
+#cam-pip .cam-dot {
+  position: absolute; top: 6px; right: 8px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #40e060;
+  box-shadow: 0 0 8px #40e060;
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ---- Status bar ---- */
+#status-bar {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #4a2008;
+  border-radius: 20px;
+  padding: 5px 20px;
+  font-size: 14px; color: #c08050;
+  z-index: 12;
+  display: none;
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Hidden camera feed -->
+  <video id="cam-feed" playsinline autoplay muted></video>
+
+  <!-- Camera PiP -->
+  <div id="cam-pip">
+    <video id="cam-preview" playsinline autoplay muted></video>
+    <div class="cam-dot"></div>
+    <div class="cam-label">🤚 AI Hand Tracking</div>
+  </div>
+
+  <!-- Status bar -->
+  <div id="status-bar" id="status-bar">🔥 Chà xát để tạo lửa!</div>
+
+  <!-- Start screen -->
+  <div id="start-screen">
+    <div class="cave-frame">
+      <div class="chapter-badge">✦ Lịch Sử Lớp 6 · Chương 2 ✦</div>
+      <h1 class="cave-title">Ngọn Lửa Bình Minh</h1>
+      <div class="cave-sub">Xã hội nguyên thuỷ – Phát minh thay đổi lịch sử</div>
+      <div class="divider"></div>
+      <p class="cave-desc">
+        Hàng triệu năm trước, tổ tiên chúng ta sống trong bóng tối hang động.<br>
+        <b>Nhiệm vụ của em:</b> Dùng <b>đôi bàn tay</b> để tạo ra ngọn lửa đầu tiên<br>
+        và khám phá ý nghĩa vĩ đại của phát minh đó!
+      </p>
+      <div class="how-to">
+        <span class="icon">📷</span> <b>Chế độ AI:</b> Giơ tay trước camera và <b>chà xát thật nhanh</b> để tăng nhiệt<br>
+        <span class="icon">🖱️</span> <b>Chế độ thường:</b> Dùng chuột/ngón tay <b>quẹt qua lại</b> trên khúc gỗ
+      </div>
+      <button class="start-btn" id="btn-start">🔥 TIẾN VÀO HANG ĐỘNG</button>
+    </div>
+  </div>
+
+  <!-- Quiz overlay -->
+  <div id="quiz-overlay">
+    <div class="quiz-card">
+      <div class="quiz-header">✦ Câu hỏi từ Hội đồng Tộc trưởng ✦</div>
+      <div class="quiz-q" id="quiz-q">
+        Ý nghĩa lớn nhất của việc người nguyên thuỷ<br>phát minh ra lửa là gì?
+      </div>
+      <div class="quiz-options" id="quiz-opts"></div>
+      <div class="quiz-hint" id="quiz-hint">Chọn đáp án đúng để giữ ngọn lửa cháy mãi...</div>
+    </div>
+  </div>
+
+  <!-- Win overlay -->
+  <div id="win-overlay">
+    <div class="win-card">
+      <div class="win-title">🔥 CHIẾN THẮNG! 🔥</div>
+      <div class="win-sub">HOÀN THÀNH CHƯƠNG 2!</div>
+      <div class="win-detail">
+        Em đã phát minh ra lửa và hiểu được ý nghĩa lịch sử của nó.<br>
+        <b style="color:#f0a040">Ngọn lửa của tri thức sẽ không bao giờ tắt!</b>
+      </div>
+      <button class="replay-btn" id="btn-replay">↺ Chơi lại</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+//  CANVAS SETUP
+// =====================================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const CW = 1200, CH = 750;
+let DPR = 1;
+
+function setupCanvas() {
+  DPR = window.devicePixelRatio || 1;
+  canvas.width  = CW * DPR;
+  canvas.height = CH * DPR;
+  ctx.scale(DPR, DPR);
+}
+setupCanvas();
+window.addEventListener('resize', () => { setupCanvas(); });
+
+// =====================================================================
+//  UTILITY
+// =====================================================================
+function lerp(a, b, t) { return a + (b-a)*t; }
+function clamp(v,mn,mx) { return Math.max(mn, Math.min(mx, v)); }
+function randRange(a,b) { return a + Math.random()*(b-a); }
+
+function drawRoundRect(c, x, y, w, h, r) {
+  r = Math.min(r, w/2, h/2);
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.lineTo(x+w-r,y);
+  c.quadraticCurveTo(x+w,y,x+w,y+r);
+  c.lineTo(x+w,y+h-r);
+  c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  c.lineTo(x+r,y+h);
+  c.quadraticCurveTo(x,y+h,x,y+h-r);
+  c.lineTo(x,y+r);
+  c.quadraticCurveTo(x,y,x+r,y);
+  c.closePath();
+}
+
+// =====================================================================
+//  AUDIO ENGINE
+// =====================================================================
+let audioCtx = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function tone(freq, type, dur, vol=0.1, delay=0) {
+  if (!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  const t = audioCtx.currentTime + delay;
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t); o.stop(t+dur);
+}
+
+// Crackle / friction sound (noise burst)
+function playCrackle(intensity) {
+  if (!audioCtx) return;
+  const bufSize = audioCtx.sampleRate * 0.06;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i=0; i<bufSize; i++) data[i] = (Math.random()*2-1) * (1-i/bufSize);
+  const src = audioCtx.createBufferSource();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  f.type = 'bandpass'; f.frequency.value = 800 + intensity*600; f.Q.value = 0.8;
+  src.buffer = buf;
+  g.gain.setValueAtTime(clamp(intensity*0.18, 0, 0.22), audioCtx.currentTime);
+  src.connect(f); f.connect(g); g.connect(audioCtx.destination);
+  src.start();
+}
+
+// Fire crackling loop
+let fireCrackleInterval = null;
+function startFireSound() {
+  if (fireCrackleInterval) return;
+  fireCrackleInterval = setInterval(() => {
+    if (!audioCtx) return;
+    tone(80 + Math.random()*40, 'sawtooth', 0.12, 0.04 + Math.random()*0.04);
+    tone(200 + Math.random()*100, 'sine', 0.08, 0.02);
+  }, 180);
+}
+function stopFireSound() {
+  if (fireCrackleInterval) { clearInterval(fireCrackleInterval); fireCrackleInterval = null; }
+}
+
+const SFX = {
+  success() {
+    [[523,0],[659,0.18],[784,0.36],[1047,0.54]].forEach(([f,d]) =>
+      tone(f,'sine',0.55,0.18,d));
+  },
+  error() {
+    tone(220,'sawtooth',0.2,0.15);
+    tone(180,'sawtooth',0.2,0.12,0.12);
+  },
+  ignite() {
+    for(let i=0;i<6;i++) tone(200+i*80,'sine',0.15,0.08,i*0.06);
+    tone(100,'sawtooth',0.6,0.18,0);
+  },
+  tick() { tone(600,'sine',0.05,0.04); }
+};
+
+// =====================================================================
+//  GAME STATE
+// =====================================================================
+let state = 'START'; // START | FRICTION | QUIZ | WIN
+let heat  = 0;       // 0 – 1
+let time  = 0;
+let fireIntensity = 0; // 0–1, lags behind heat for smooth visuals
+// quizAnswered removed — state machine handles this now
+let shakeDur = 0, shakeAmt = 0;
+let bgFlash = 0; // 0–1 for win/lose flash
+let bgFlashColor = 'rgba(255,80,0,';
+
+// Friction mouse tracking
+let prevMouseX = -1, prevMouseY = -1;
+let mouseVelocity = 0;
+let frictionActive = false;
+let lastFrictionTime = 0;
+
+// AI hand tracking
+let handVelocity = 0;
+let aiMode = false;
+
+// Wood log center
+const LOG_X = CW/2, LOG_Y = CH/2 - 20;
+
+// Cave ambience animation
+let stalactiteDrip = 0;
+
+// =====================================================================
+//  PARTICLE SYSTEM
+// =====================================================================
+class Particle {
+  constructor(x, y, kind) {
+    this.x = x; this.y = y; this.kind = kind;
+    switch(kind) {
+      case 'spark':
+        this.vx = randRange(-2.5, 2.5);
+        this.vy = randRange(-6, -1.5);
+        this.life = 1; this.decay = randRange(0.025, 0.055);
+        this.size = randRange(1.5, 3.5);
+        this.col = `hsl(${randRange(15,45)},100%,${randRange(55,80)}%)`;
+        break;
+      case 'ember':
+        this.vx = randRange(-1, 1);
+        this.vy = randRange(-3, -0.5);
+        this.life = 1; this.decay = randRange(0.008, 0.018);
+        this.size = randRange(1, 2.5);
+        this.col = `hsl(${randRange(5,30)},100%,60%)`;
+        break;
+      case 'smoke':
+        this.vx = randRange(-0.4, 0.4);
+        this.vy = randRange(-1.2, -0.4);
+        this.life = 1; this.decay = randRange(0.006, 0.014);
+        this.size = randRange(12, 28);
+        this.col = 'rgba(80,50,30,';
+        break;
+      case 'fire':
+        this.vx = randRange(-1.2, 1.2);
+        this.vy = randRange(-5, -2);
+        this.life = 1; this.decay = randRange(0.028, 0.055);
+        this.size = randRange(8, 28);
+        this.hue = randRange(0, 40);
+        this.sat = randRange(80, 100);
+        break;
+      case 'confetti':
+        this.vx = randRange(-4, 4); this.vy = randRange(-8, -2);
+        this.life = 1; this.decay = randRange(0.01, 0.02);
+        this.size = randRange(5, 10);
+        this.rot = Math.random()*Math.PI*2;
+        this.rotV = randRange(-0.15, 0.15);
+        const cols2 = ['#ffb030','#ff6020','#ffd060','#ff4040','#ffe090'];
+        this.col = cols2[Math.floor(Math.random()*cols2.length)];
+        break;
+    }
+  }
+
+  update() {
+    this.x += this.vx; this.y += this.vy; this.life -= this.decay;
+    switch(this.kind) {
+      case 'spark': this.vy += 0.18; this.vx *= 0.96; break;
+      case 'ember': this.vy += 0.05; this.vx += randRange(-0.06,0.06); break;
+      case 'smoke': this.vy -= 0.005; this.size += 0.3; this.vx += randRange(-0.04,0.04); break;
+      case 'fire':  this.vy -= 0.1; this.vx += randRange(-0.15,0.15); this.size *= 0.975; break;
+      case 'confetti': this.vy += 0.12; this.rot += this.rotV; this.vx *= 0.98; break;
+    }
+  }
+
+  draw(c) {
+    if (this.life <= 0) return;
+    const a = Math.max(0, this.life);
+    c.save();
+    switch(this.kind) {
+      case 'spark':
+      case 'ember':
+        c.globalAlpha = a;
+        c.fillStyle = this.col;
+        c.shadowColor = this.col; c.shadowBlur = 6;
+        c.beginPath(); c.arc(this.x, this.y, this.size, 0, Math.PI*2); c.fill();
+        break;
+      case 'smoke':
+        c.globalAlpha = a * 0.18;
+        c.fillStyle = this.col + a*0.18+')';
+        c.beginPath(); c.arc(this.x, this.y, this.size, 0, Math.PI*2); c.fill();
+        break;
+      case 'fire':
+        c.globalCompositeOperation = 'lighter';
+        const lum = 40 + this.life * 40;
+        c.globalAlpha = a * 0.6;
+        const fg = c.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+        fg.addColorStop(0, `hsla(${this.hue+20},${this.sat}%,${lum}%,1)`);
+        fg.addColorStop(0.5, `hsla(${this.hue},${this.sat}%,${lum*0.6}%,0.7)`);
+        fg.addColorStop(1, `hsla(${this.hue},${this.sat}%,10%,0)`);
+        c.fillStyle = fg;
+        c.beginPath(); c.arc(this.x, this.y, this.size, 0, Math.PI*2); c.fill();
+        c.globalCompositeOperation = 'source-over';
+        break;
+      case 'confetti':
+        c.globalAlpha = a;
+        c.fillStyle = this.col;
+        c.translate(this.x, this.y); c.rotate(this.rot);
+        c.fillRect(-this.size/2, -this.size/2, this.size, this.size*0.55);
+        break;
+    }
+    c.restore();
+  }
+}
+
+let particles = [];
+
+function burst(x, y, kind, n) {
+  for (let i=0; i<n; i++) particles.push(new Particle(x, y, kind));
+}
+
+// =====================================================================
+//  FIRE SYSTEM
+// =====================================================================
+class FireSystem {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.intensity = 0; // 0–1
+    this.haloAnim = 0;
+  }
+
+  update(intensity) {
+    this.intensity = lerp(this.intensity, intensity, 0.06);
+    this.haloAnim += 0.05;
+    const rate = this.intensity;
+    if (rate > 0.05) {
+      if (Math.random() < rate * 0.7) particles.push(new Particle(
+        this.x + randRange(-20,20)*rate, this.y + randRange(-10,10),
+        'fire'
+      ));
+      if (Math.random() < rate * 0.3) particles.push(new Particle(
+        this.x + randRange(-15,15), this.y - 30,
+        'smoke'
+      ));
+    }
+    if (rate > 0.5 && Math.random() < (rate-0.5)*0.4) {
+      particles.push(new Particle(
+        this.x + randRange(-40,40), this.y + randRange(-20,20),
+        'ember'
+      ));
+    }
+  }
+
+  draw(c) {
+    if (this.intensity < 0.04) return;
+    const I = this.intensity;
+
+    // Ground glow under log
+    c.save();
+    c.globalCompositeOperation = 'lighter';
+    const glow = c.createRadialGradient(this.x, this.y+60, 0, this.x, this.y+60, 180*I);
+    glow.addColorStop(0, `rgba(200,80,0,${0.18*I})`);
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = glow;
+    c.fillRect(this.x-200, this.y-20, 400, 200);
+    c.globalCompositeOperation = 'source-over';
+    c.restore();
+
+    // Win halo
+    if (I > 0.95) {
+      c.save();
+      const pulse = 0.7 + 0.3*Math.sin(this.haloAnim);
+      const halo = c.createRadialGradient(this.x, this.y-60, 0, this.x, this.y-60, 220*pulse);
+      halo.addColorStop(0, `rgba(255,180,50,${0.25*I})`);
+      halo.addColorStop(0.5, `rgba(255,80,0,${0.1*I})`);
+      halo.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = halo;
+      c.beginPath(); c.arc(this.x, this.y-60, 220*pulse, 0, Math.PI*2); c.fill();
+      c.restore();
+    }
+  }
+}
+
+const fire = new FireSystem(LOG_X, LOG_Y + 10);
+
+// =====================================================================
+//  CAVE BACKGROUND RENDERER
+// =====================================================================
+class CaveRenderer {
+  constructor() {
+    // Pre-generate stalactite positions
+    this.stalactites = Array.from({length:14}, () => ({
+      x: randRange(30, CW-30),
+      w: randRange(10, 28),
+      h: randRange(40, 120),
+      drip: Math.random()
+    }));
+    this.wallCracks = Array.from({length:18}, () => ({
+      x1: randRange(0,CW), y1: randRange(0,CH*0.6),
+      dx: randRange(-60,60), dy: randRange(30,80),
+      w: randRange(0.5,2.5)
+    }));
+    this.pebbles = Array.from({length:20}, () => ({
+      x: randRange(20, CW-20), y: randRange(CH*0.7, CH-30),
+      r: randRange(3, 10)
+    }));
+    this.torch = { x: 80, y: 180 };
+    this.torch2 = { x: CW-80, y: 180 };
+    this.t = 0;
+  }
+
+  draw(c, fireIntensity) {
+    this.t++;
+    const ambientLight = 0.05 + fireIntensity * 0.55;
+
+    // Sky-dark ceiling
+    c.fillStyle = '#060402';
+    c.fillRect(0, 0, CW, CH);
+
+    // Cave wall texture (rough radial)
+    const wallGrad = c.createRadialGradient(CW/2, CH*0.55, 80, CW/2, CH*0.55, 700);
+    wallGrad.addColorStop(0, `rgba(35,18,8,${ambientLight})`);
+    wallGrad.addColorStop(0.5, `rgba(20,10,4,${ambientLight*0.7})`);
+    wallGrad.addColorStop(1, `rgba(5,2,1,0)`);
+    c.fillStyle = wallGrad;
+    c.fillRect(0,0,CW,CH);
+
+    // Rock grain lines
+    c.globalAlpha = 0.06 + fireIntensity*0.08;
+    this.wallCracks.forEach(cr => {
+      c.strokeStyle = '#2a1206'; c.lineWidth = cr.w;
+      c.beginPath(); c.moveTo(cr.x1, cr.y1);
+      c.lineTo(cr.x1+cr.dx, cr.y1+cr.dy); c.stroke();
+    });
+    c.globalAlpha = 1;
+
+    // Ground (stone floor)
+    const floorGrad = c.createLinearGradient(0, CH*0.72, 0, CH);
+    floorGrad.addColorStop(0, `rgba(30,14,6,${0.3+fireIntensity*0.5})`);
+    floorGrad.addColorStop(1, `rgba(15,6,2,0.9)`);
+    c.fillStyle = floorGrad;
+    c.fillRect(0, CH*0.72, CW, CH);
+
+    // Ground line
+    c.strokeStyle = `rgba(60,28,10,${0.4+fireIntensity*0.4})`; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(0, CH*0.72); c.lineTo(CW, CH*0.72); c.stroke();
+
+    // Pebbles
+    c.globalAlpha = 0.3 + fireIntensity*0.4;
+    this.pebbles.forEach(p => {
+      c.fillStyle = '#2a1408';
+      c.beginPath(); c.ellipse(p.x, p.y, p.r*1.6, p.r*0.8, 0, 0, Math.PI*2); c.fill();
+    });
+    c.globalAlpha = 1;
+
+    // Stalactites
+    this.stalactites.forEach(s => {
+      const g = c.createLinearGradient(s.x, 0, s.x, s.h);
+      g.addColorStop(0, '#1a0c06');
+      g.addColorStop(1, '#0a0604');
+      c.fillStyle = g;
+      c.beginPath();
+      c.moveTo(s.x - s.w/2, 0);
+      c.lineTo(s.x + s.w/2, 0);
+      c.lineTo(s.x + s.w/4, s.h * 0.7);
+      c.lineTo(s.x, s.h);
+      c.lineTo(s.x - s.w/4, s.h * 0.7);
+      c.closePath(); c.fill();
+      // Drip
+      if (Math.random() < 0.003) s.drip = 0;
+      if (s.drip < 1) {
+        s.drip += 0.012;
+        c.fillStyle = 'rgba(40,80,120,0.5)';
+        c.beginPath(); c.arc(s.x, s.h + s.drip*30, 2, 0, Math.PI*2); c.fill();
+      }
+    });
+
+    // Wall torches (decorative, glow with fire intensity)
+    [this.torch, this.torch2].forEach((t, ti) => {
+      const flicker = 0.6 + 0.4*Math.sin(this.t*0.12 + ti*2.3);
+      const tg = c.createRadialGradient(t.x, t.y, 0, t.x, t.y, 80*flicker);
+      tg.addColorStop(0, `rgba(255,120,20,${0.12*fireIntensity*flicker})`);
+      tg.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = tg; c.fillRect(t.x-80, t.y-80, 160, 160);
+
+      // Torch stick
+      c.fillStyle = '#5a3010'; c.fillRect(t.x-4, t.y, 8, 30);
+      c.fillStyle = '#8b4010'; c.fillRect(t.x-6, t.y-8, 12, 14);
+      // Flame
+      if (fireIntensity > 0.01) {
+        const ff = c.createRadialGradient(t.x, t.y-14, 0, t.x, t.y-14, 18*flicker);
+        ff.addColorStop(0, `rgba(255,200,50,${0.9*flicker})`);
+        ff.addColorStop(0.5, `rgba(255,80,0,${0.7*flicker})`);
+        ff.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = ff;
+        c.beginPath(); c.ellipse(t.x, t.y-14, 10*flicker, 18*flicker, 0, 0, Math.PI*2); c.fill();
+      }
+    });
+
+    // Cave paintings (simple primitive drawings on wall – my addition!)
+    this.drawCavePaintings(c, fireIntensity);
+  }
+
+  drawCavePaintings(c, fi) {
+    if (fi < 0.1) return;
+    c.save();
+    c.globalAlpha = Math.min(1, (fi-0.1)*2) * 0.55;
+
+    // Human silhouette (left wall)
+    c.strokeStyle = '#8b2010'; c.lineWidth = 3; c.lineCap = 'round';
+    const hx = 160, hy = 440;
+    c.beginPath(); c.arc(hx, hy-50, 12, 0, Math.PI*2); c.stroke(); // head
+    c.beginPath(); c.moveTo(hx, hy-38); c.lineTo(hx, hy+20); c.stroke(); // body
+    c.beginPath(); c.moveTo(hx-20, hy-15); c.lineTo(hx+20, hy-10); c.stroke(); // arms
+    c.beginPath(); c.moveTo(hx, hy+20); c.lineTo(hx-14, hy+48); c.stroke(); // left leg
+    c.beginPath(); c.moveTo(hx, hy+20); c.lineTo(hx+14, hy+48); c.stroke(); // right leg
+
+    // Animal silhouette (deer, right wall)
+    const dx = CW-180, dy = 450;
+    c.beginPath(); c.moveTo(dx-35,dy); c.lineTo(dx+15,dy-20); c.lineTo(dx+40,dy-18);
+    c.lineTo(dx+60,dy-5); c.lineTo(dx+35,dy+20); c.lineTo(dx-20,dy+22); c.closePath(); c.stroke();
+    // Legs
+    [[dx-20,dy+22],[dx,dy+22],[dx+15,dy+22],[dx+30,dy+22]].forEach(([lx,ly]) => {
+      c.beginPath(); c.moveTo(lx,ly); c.lineTo(lx-2,ly+22); c.stroke();
+    });
+    // Head
+    c.beginPath(); c.arc(dx+52, dy-14, 10, 0, Math.PI*2); c.stroke();
+
+    // Sun/circle symbols (top center)
+    c.beginPath(); c.arc(CW/2, 100, 22, 0, Math.PI*2); c.stroke();
+    for (let i=0; i<8; i++) {
+      const a = (i/8)*Math.PI*2;
+      c.beginPath();
+      c.moveTo(CW/2 + Math.cos(a)*26, 100 + Math.sin(a)*26);
+      c.lineTo(CW/2 + Math.cos(a)*36, 100 + Math.sin(a)*36);
+      c.stroke();
+    }
+
+    c.restore();
+  }
+}
+
+// =====================================================================
+//  LOG / FRICTION OBJECT RENDERER
+// =====================================================================
+class LogRenderer {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.w = 240; this.h = 80;
+    this.glow = 0;
+    this.shakeX = 0;
+    this.t = 0;
+  }
+
+  draw(c, heat) {
+    this.t++;
+    this.glow = lerp(this.glow, heat, 0.08);
+    this.shakeX = heat > 0.3 ? Math.sin(this.t * (heat*20+5)) * heat * 3 : 0;
+
+    const x = this.x + this.shakeX, y = this.y;
+    c.save();
+
+    // Log glow
+    if (this.glow > 0.05) {
+      c.globalCompositeOperation = 'lighter';
+      const lg = c.createRadialGradient(x, y, 0, x, y, 180*this.glow);
+      lg.addColorStop(0, `rgba(220,90,10,${0.25*this.glow})`);
+      lg.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = lg;
+      c.beginPath(); c.arc(x, y, 180*this.glow, 0, Math.PI*2); c.fill();
+      c.globalCompositeOperation = 'source-over';
+    }
+
+    // Stone socket
+    const sx = x, sy = y + this.h/2 - 8;
+    const stoneG = c.createLinearGradient(sx-this.w*0.7, sy, sx+this.w*0.7, sy+30);
+    stoneG.addColorStop(0, '#1e1008'); stoneG.addColorStop(0.5,'#2e1808'); stoneG.addColorStop(1,'#1a0e06');
+    c.fillStyle = stoneG;
+    c.beginPath(); c.ellipse(sx, sy+16, this.w*0.72, 24, 0, 0, Math.PI*2); c.fill();
+    c.strokeStyle = '#100804'; c.lineWidth = 2;
+    c.beginPath(); c.ellipse(sx, sy+16, this.w*0.72, 24, 0, 0, Math.PI*2); c.stroke();
+
+    // Log body (two pieces, V shape)
+    [[-1, -14, -0.12], [1, -14, 0.12]].forEach(([side, ty, angle]) => {
+      c.save();
+      c.translate(x + side*28, y + ty);
+      c.rotate(angle);
+
+      const lw = 28, lh = 100;
+      const lg2 = c.createLinearGradient(-lw/2, -lh/2, lw/2, lh/2);
+
+      // Heat color mixing
+      const r1 = Math.round(lerp(90, 200, this.glow));
+      const g1 = Math.round(lerp(50, 60, this.glow));
+      const b1 = Math.round(lerp(20, 0, this.glow));
+      const r2 = Math.round(lerp(60, 140, this.glow));
+      lg2.addColorStop(0, `rgb(${r1},${g1},${b1})`);
+      lg2.addColorStop(0.5, `rgb(${r2},${g1-10},${b1})`);
+      lg2.addColorStop(1, `rgb(40,20,5)`);
+      c.fillStyle = lg2;
+      c.shadowColor = `rgba(${r1},${g1},0,${this.glow*0.6})`;
+      c.shadowBlur = 12 * this.glow;
+
+      drawRoundRect(c, -lw/2, -lh/2, lw, lh, 6);
+      c.fill();
+
+      // Wood grain rings
+      c.shadowBlur = 0;
+      c.globalAlpha = 0.18;
+      for (let i=0; i<4; i++) {
+        c.strokeStyle = `rgb(${40+i*8},${20+i*4},5)`;
+        c.lineWidth = 1;
+        c.beginPath(); c.ellipse(0, lh/4, (lw/2-2-i*2), 5, 0, 0, Math.PI*2); c.stroke();
+      }
+      c.globalAlpha = 1;
+
+      // Embers on hot end (bottom/contact point)
+      if (this.glow > 0.4) {
+        const emberCount = Math.floor(this.glow * 5);
+        for (let e=0; e<emberCount; e++) {
+          const ea = this.t * 0.2 + e;
+          const er = randRange(0, lw/2-2);
+          c.fillStyle = `rgba(255,${100+Math.random()*100},0,${Math.random()*0.8})`;
+          c.beginPath();
+          c.arc(er*Math.cos(ea), lh/2 - 5 + randRange(-4,4), randRange(1,3), 0, Math.PI*2);
+          c.fill();
+        }
+      }
+      c.restore();
+    });
+
+    // Friction indicator zone (hit zone visual)
+    const zoneAlpha = 0.06 + 0.1*Math.abs(Math.sin(this.t*0.04));
+    c.globalAlpha = zoneAlpha;
+    c.strokeStyle = '#f08020'; c.lineWidth = 2; c.setLineDash([6,4]);
+    c.beginPath(); c.ellipse(x, y-10, this.w*0.55, 40, 0, 0, Math.PI*2); c.stroke();
+    c.setLineDash([]);
+    c.globalAlpha = 1;
+
+    c.restore();
+  }
+}
+
+// =====================================================================
+//  HEAT BAR
+// =====================================================================
+class HeatBar {
+  constructor() {
+    this.x = CW/2 - 220; this.y = CH - 55;
+    this.w = 440; this.h = 28;
+    this.displayHeat = 0;
+  }
+
+  draw(c, heat) {
+    this.displayHeat = Math.min(1.0, lerp(this.displayHeat, Math.min(heat, 1.0), 0.1));
+    const H = this.displayHeat;
+
+    // Background track
+    c.save();
+    c.shadowColor = 'rgba(0,0,0,0.8)'; c.shadowBlur = 10;
+    c.fillStyle = '#0a0502';
+    drawRoundRect(c, this.x-3, this.y-3, this.w+6, this.h+6, 8); c.fill();
+    c.shadowBlur = 0;
+
+    // Border
+    c.strokeStyle = '#5a2808'; c.lineWidth = 2;
+    drawRoundRect(c, this.x, this.y, this.w, this.h, 6); c.stroke();
+
+    if (H > 0) {
+      const fW = H * this.w;
+      // Fire gradient fill
+      const hGrad = c.createLinearGradient(this.x, 0, this.x + fW, 0);
+      hGrad.addColorStop(0,   '#401000');
+      hGrad.addColorStop(0.4, '#c03010');
+      hGrad.addColorStop(0.7, '#e06010');
+      hGrad.addColorStop(1,   '#ffa030');
+      c.fillStyle = hGrad;
+      drawRoundRect(c, this.x, this.y, fW, this.h, 6); c.fill();
+
+      // Shimmer
+      if (H > 0.3) {
+        c.globalAlpha = 0.25;
+        c.fillStyle = '#fff';
+        drawRoundRect(c, this.x+2, this.y+2, fW-4, this.h/2-2, 4); c.fill();
+        c.globalAlpha = 1;
+      }
+
+      // Glow on bar
+      c.globalCompositeOperation = 'lighter';
+      const barGlow = c.createLinearGradient(this.x, 0, this.x+fW, 0);
+      barGlow.addColorStop(0, 'rgba(0,0,0,0)');
+      barGlow.addColorStop(1, `rgba(255,100,0,${H*0.3})`);
+      c.fillStyle = barGlow;
+      c.fillRect(this.x, this.y, fW, this.h);
+      c.globalCompositeOperation = 'source-over';
+    }
+
+    // Tick marks
+    c.globalAlpha = 0.3;
+    c.strokeStyle = '#8b4010'; c.lineWidth = 1;
+    for (let i=1; i<10; i++) {
+      const tx = this.x + (i/10)*this.w;
+      c.beginPath(); c.moveTo(tx, this.y+3); c.lineTo(tx, this.y+this.h-3); c.stroke();
+    }
+    c.globalAlpha = 1;
+
+    // Flame icon + label
+    c.font = '18px "Times New Roman"';
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    const pct = Math.round(H*100);
+    c.fillStyle = pct >= 100 ? '#ffb030' : '#d06020';
+    c.shadowColor = pct >= 100 ? '#ffb030' : 'transparent';
+    c.shadowBlur = pct >= 100 ? 12 : 0;
+    c.fillText(`🌡️  Nhiệt lượng: ${pct}%`, CW/2, this.y + this.h + 18);
+    c.shadowBlur = 0;
+
+    // 100% flash ring
+    if (H >= 0.99) {
+      c.strokeStyle = `rgba(255,160,0,${0.5+0.5*Math.sin(Date.now()*0.01)})`;
+      c.lineWidth = 3;
+      drawRoundRect(c, this.x-4, this.y-4, this.w+8, this.h+8, 10); c.stroke();
+    }
+
+    c.restore();
+  }
+}
+
+// =====================================================================
+//  INSTRUCTION OVERLAY (while in friction mode)
+// =====================================================================
+function drawInstructions(c, aiMode, heat) {
+  if (heat > 0.15) return;
+  const a = Math.max(0, 1 - heat*6) * (0.5 + 0.15*Math.sin(time*0.06));
+  c.save();
+  c.globalAlpha = a;
+  c.fillStyle = '#d09050';
+  c.font = 'italic 22px "Times New Roman"';
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText(
+    aiMode
+      ? '✋  Chà xát bàn tay thật nhanh trước camera!'
+      : '↔  Quẹt chuột / ngón tay qua lại trên khúc gỗ!',
+    CW/2, CH/2 + 160
+  );
+  c.restore();
+}
+
+// =====================================================================
+//  GAME OBJECTS
+// =====================================================================
+const cave = new CaveRenderer();
+const log  = new LogRenderer(LOG_X, LOG_Y);
+const heatBar = new HeatBar();
+
+// =====================================================================
+//  QUIZ SYSTEM (HTML DOM)
+// =====================================================================
+const QUIZ = {
+  q: 'Ý nghĩa lớn nhất của việc người nguyên thuỷ phát minh ra lửa là gì?',
+  opts: [
+    { key:'A', text:'Để nung đồ gốm và làm đồ trang sức.', correct: false },
+    { key:'B', text:'Giúp con người ăn chín uống sôi, cải thiện sức khoẻ và xua đuổi thú dữ.', correct: true },
+    { key:'C', text:'Để đốt rừng làm nương rẫy trồng trọt.', correct: false },
+    { key:'D', text:'Để đúc công cụ bằng đồng và sắt.', correct: false },
+  ]
+};
+
+function buildQuiz() {
+  const optContainer = document.getElementById('quiz-opts');
+  optContainer.innerHTML = '';
+  QUIZ.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.innerHTML = `<span class="opt-key">${o.key}</span> ${o.text}`;
+    btn.onclick = () => handleQuizAnswer(i, btn, o.correct);
+    optContainer.appendChild(btn);
+  });
+  document.getElementById('quiz-hint').textContent = 'Chọn đáp án đúng để giữ ngọn lửa cháy mãi...';
+}
+
+let quizLocked = false;
+function handleQuizAnswer(i, btn, correct) {
+  if (quizLocked) return;
+  quizLocked = true;
+  if (correct) {
+    btn.classList.add('correct');
+    document.getElementById('quiz-hint').textContent = '🔥 Chính xác! Lửa bùng sáng rực rỡ!';
+    SFX.success();
+    burst(CW/2, CH/2, 'confetti', 60);
+    burst(CW/2, CH/2, 'spark', 40);
+    setTimeout(() => {
+      document.getElementById('quiz-overlay').classList.remove('active');
+      state = 'WIN';
+      fireIntensity = 1;
+      stopFireSound();
+      startFireSound();
+      // Massive win burst
+      for (let i=0; i<5; i++) setTimeout(() => {
+        burst(randRange(200,CW-200), randRange(100,CH-200), 'confetti', 30);
+        burst(randRange(200,CW-200), randRange(100,CH-200), 'spark', 20);
+      }, i*200);
+      setTimeout(() => document.getElementById('win-overlay').classList.add('active'), 1200);
+    }, 1000);
+  } else {
+    btn.classList.add('wrong');
+    document.getElementById('quiz-hint').textContent = '💨 Sai rồi! Lửa tắt... Hãy chà xát lại!';
+    SFX.error();
+    shakeDur = 20; shakeAmt = 12;
+    bgFlash = 1; bgFlashColor = 'rgba(150,0,0,';
+    stopFireSound();
+    // Đổi state ngay lập tức để QUIZ block không chạy nữa
+    state = 'COOLING';
+    setTimeout(() => {
+      document.getElementById('quiz-overlay').classList.remove('active');
+      document.querySelectorAll('.quiz-opt').forEach(b => b.classList.remove('wrong','correct'));
+      document.getElementById('quiz-hint').textContent = 'Chọn đáp án đúng để giữ ngọn lửa cháy mãi...';
+      quizLocked = false;
+      heat = 0.3;
+      fireIntensity = 0.3;
+      state = 'FRICTION'; // Chỉ đổi về FRICTION sau khi quiz đã đóng xong
+    }, 1600);
+  }
+}
+
+// =====================================================================
+//  MEDIAPIPE HAND TRACKING
+// =====================================================================
+let handLandmarks = null;
+let prevHandX = null, prevHandY = null;
+let mpReady = false;
+
+function initMediaPipe() {
+  try {
+    if (typeof Hands === 'undefined') throw new Error('Hands not loaded');
+    const hands = new Hands({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+    });
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5
+    });
+    hands.onResults(results => {
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        handLandmarks = results.multiHandLandmarks[0];
+        const tip = handLandmarks[8]; // index fingertip
+        const hx = tip.x * CW, hy = tip.y * CH;
+        if (prevHandX !== null) {
+          const dx = hx - prevHandX, dy = hy - prevHandY;
+          const v = Math.sqrt(dx*dx + dy*dy);
+          handVelocity = clamp(v, 0, 80);
+        }
+        prevHandX = hx; prevHandY = hy;
+        mpReady = true;
+      } else {
+        handVelocity *= 0.8;
+        prevHandX = null; prevHandY = null;
+      }
+    });
+
+    const videoEl = document.getElementById('cam-feed');
+    const camUtils = new Camera(videoEl, {
+      onFrame: async () => { await hands.send({ image: videoEl }); },
+      width: 320, height: 240
+    });
+    camUtils.start().then(() => {
+      aiMode = true;
+      const pip = document.getElementById('cam-pip');
+      const preview = document.getElementById('cam-preview');
+      pip.style.display = 'block';
+      // Mirror the feed in the preview
+      videoEl.addEventListener('play', () => {
+        preview.srcObject = videoEl.srcObject;
+      });
+      document.getElementById('status-bar').textContent = '📷 AI Hand Tracking đang hoạt động';
+    }).catch(() => {
+      console.warn('Camera failed, using mouse fallback');
+      aiMode = false;
+    });
+  } catch(e) {
+    console.warn('MediaPipe not available, using mouse fallback:', e.message);
+    aiMode = false;
+  }
+}
+
+// =====================================================================
+//  MOUSE / TOUCH FRICTION INPUT
+// =====================================================================
+function getCanvasPos(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) * (CW / rect.width),
+    y: (clientY - rect.top)  * (CH / rect.height)
+  };
+}
+
+function onMove(cx, cy) {
+  if (state !== 'FRICTION') return;
+  if (prevMouseX >= 0) {
+    const dx = cx - prevMouseX, dy = cy - prevMouseY;
+    mouseVelocity = clamp(Math.sqrt(dx*dx + dy*dy), 0, 80);
+    // Only count if near the log
+    const distToLog = Math.sqrt((cx-LOG_X)**2 + (cy-LOG_Y)**2);
+    if (distToLog < 180) {
+      frictionActive = true;
+      lastFrictionTime = time;
+      if (mouseVelocity > 5) {
+        // Spawn sparks at friction point
+        if (heat > 0.15 && Math.random() < 0.5) {
+          particles.push(new Particle(cx + randRange(-20,20), cy + randRange(-10,10), 'spark'));
+        }
+        if (mouseVelocity > 15) playCrackle(mouseVelocity/80);
+      }
+    }
+  }
+  prevMouseX = cx; prevMouseY = cy;
+}
+
+canvas.addEventListener('mousemove', e => {
+  const {x,y} = getCanvasPos(e.clientX, e.clientY);
+  onMove(x,y);
+});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const {x,y} = getCanvasPos(t.clientX, t.clientY);
+  onMove(x,y);
+}, {passive:false});
+canvas.addEventListener('mouseleave', () => { prevMouseX=-1; prevMouseY=-1; mouseVelocity=0; });
+canvas.addEventListener('touchend', () => { prevMouseX=-1; prevMouseY=-1; mouseVelocity=0; });
+
+// =====================================================================
+//  MAIN GAME LOOP
+// =====================================================================
+function gameLoop() {
+  time++;
+
+  // Friction decay
+  if (time - lastFrictionTime > 8) frictionActive = false;
+  mouseVelocity *= 0.82;
+  handVelocity  *= 0.82;
+
+  // ── FRICTION: chà xát tăng nhiệt, heat tối đa 0.999 ──
+  if (state === 'FRICTION') {
+    const velocity = aiMode ? handVelocity : mouseVelocity;
+    const friction = frictionActive || (aiMode && handVelocity > 3);
+    if (friction && velocity > 3) {
+      const heatGain = clamp(velocity / 600, 0, 0.008);
+      heat = clamp(heat + heatGain, 0, 0.999);
+      if (heat > 0.2 && Math.random() < heat*0.4) {
+        particles.push(new Particle(
+          LOG_X + randRange(-60,60), LOG_Y + randRange(-30,10), 'spark'
+        ));
+      }
+      if (velocity > 20 && !aiMode) playCrackle(velocity/80 * heat);
+    } else {
+      heat = clamp(heat - 0.003, 0, 0.999);
+    }
+    fireIntensity = lerp(fireIntensity, heat, 0.05);
+
+    // Đủ nhiệt → chuyển sang IGNITING (trạng thái trung gian, chờ 1.5s rồi show quiz)
+    if (heat >= 0.98) {
+      heat = 1.0; fireIntensity = 1.0;
+      state = 'IGNITING';
+      SFX.ignite();
+      startFireSound();
+      burst(LOG_X, LOG_Y, 'spark', 60);
+      burst(LOG_X, LOG_Y - 40, 'fire', 20);
+      bgFlash = 1; bgFlashColor = 'rgba(255,80,0,';
+      setTimeout(() => {
+        if (state === 'IGNITING') {
+          state = 'QUIZ';
+          buildQuiz();
+          document.getElementById('quiz-overlay').classList.add('active');
+          quizLocked = false;
+        }
+      }, 1500);
+    }
+  }
+
+  // ── IGNITING: lửa bùng, chờ hiện quiz ──
+  if (state === 'IGNITING') {
+    heat = 1.0;
+    fireIntensity = lerp(fireIntensity, 1.0, 0.06);
+  }
+
+  // ── QUIZ: đóng băng hoàn toàn ──
+  if (state === 'QUIZ') {
+    frictionActive = false;
+    mouseVelocity = 0;
+    handVelocity = 0;
+    heat = 1.0;
+    fireIntensity = lerp(fireIntensity, 1.0, 0.04);
+  }
+
+  // ── COOLING: đang đóng quiz sai, chặn mọi input ──
+  if (state === 'COOLING') {
+    frictionActive = false;
+    mouseVelocity = 0;
+    handVelocity = 0;
+    heat = lerp(heat, 0.3, 0.04);
+    fireIntensity = lerp(fireIntensity, 0, 0.05);
+  }
+
+  if (state === 'WIN') {
+    heat = lerp(heat, 1, 0.02);
+    fireIntensity = lerp(fireIntensity, 1, 0.04);
+  }
+
+  // Camera shake
+  let sx = 0, sy = 0;
+  if (shakeDur > 0) {
+    sx = (Math.random()-0.5)*shakeAmt*(shakeDur/20);
+    sy = (Math.random()-0.5)*shakeAmt*(shakeDur/20)*0.5;
+    shakeDur--;
+  }
+  if (bgFlash > 0) bgFlash -= 0.03;
+
+  // ---- DRAW ----
+  ctx.save();
+  ctx.translate(sx, sy);
+
+  // Background flash
+  cave.draw(ctx, fireIntensity);
+  if (bgFlash > 0) {
+    ctx.globalAlpha = bgFlash * 0.35;
+    ctx.fillStyle = bgFlashColor + '1)';
+    ctx.fillRect(0,0,CW,CH);
+    ctx.globalAlpha = 1;
+  }
+
+  // Particles (behind log)
+  particles.forEach(p => { if(p.kind==='smoke') p.draw(ctx); });
+
+  // Fire system
+  fire.update(fireIntensity);
+  fire.draw(ctx);
+
+  // Log
+  if (state !== 'WIN' || fireIntensity < 0.1)
+    log.draw(ctx, heat);
+  else
+    log.draw(ctx, fireIntensity);
+
+  // Particles (above log)
+  particles.forEach(p => { if(p.kind!=='smoke') p.draw(ctx); });
+
+  // Cleanup dead particles
+  for (let i = particles.length-1; i>=0; i--) {
+    particles[i].update();
+    if (particles[i].life <= 0) particles.splice(i,1);
+  }
+
+  // Heat bar
+  if (state === 'FRICTION' || state === 'QUIZ' || state === 'IGNITING' || state === 'COOLING') heatBar.draw(ctx, heat);
+
+  // Instructions
+  if (state === 'FRICTION') drawInstructions(ctx, aiMode, heat);
+
+  // Hand dot visualization
+  if (aiMode && prevHandX !== null && state === 'FRICTION') {
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    const dotG = ctx.createRadialGradient(prevHandX, prevHandY, 0, prevHandX, prevHandY, 22);
+    dotG.addColorStop(0, 'rgba(255,160,30,0.9)');
+    dotG.addColorStop(1, 'rgba(255,80,0,0)');
+    ctx.fillStyle = dotG;
+    ctx.beginPath(); ctx.arc(prevHandX, prevHandY, 22, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Status display
+  if (state === 'WIN') {
+    ctx.save();
+    const pulse = 0.7 + 0.3*Math.sin(time*0.05);
+    ctx.globalAlpha = pulse;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillStyle = '#ffb030';
+    ctx.shadowColor = '#ff8000'; ctx.shadowBlur = 30;
+    ctx.font = `bold ${Math.round(32+Math.sin(time*0.08)*4)}px "Times New Roman"`;
+    ctx.fillText('🔥 NGỌN LỬA VĨ ĐẠI ĐÃ ĐƯỢC THẮP SÁNG! 🔥', CW/2, 30);
+    ctx.restore();
+  }
+
+  ctx.restore();
+  requestAnimationFrame(gameLoop);
+}
+
+// =====================================================================
+//  BUTTON HANDLERS
+// =====================================================================
+document.getElementById('btn-start').addEventListener('click', () => {
+  initAudio();
+  initMediaPipe();
+  state = 'FRICTION';
+  quizAnswered = false; quizLocked = false;
+  heat = 0; fireIntensity = 0;
+  heatBar.displayHeat = 0;   // ← reset visual bar
+  particles = [];
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('status-bar').style.display = 'block';
+  requestAnimationFrame(gameLoop);
+});
+
+document.getElementById('btn-replay').addEventListener('click', () => {
+  document.getElementById('win-overlay').classList.remove('active');
+  document.getElementById('quiz-overlay').classList.remove('active');
+  document.querySelectorAll('.quiz-opt').forEach(b => b.classList.remove('wrong','correct'));
+  state = 'FRICTION';
+  heat = 0; fireIntensity = 0;
+  heatBar.displayHeat = 0;   // ← reset visual bar
+  quizAnswered = false; quizLocked = false;
+  particles = [];
+  shakeDur = 0; bgFlash = 0;
+  stopFireSound();
+});
+
+// Kick off render loop in background (for start screen)
+(function bgLoop() {
+  if (state === 'START') requestAnimationFrame(bgLoop);
+})();
+</script>
+</body>
+</html>
