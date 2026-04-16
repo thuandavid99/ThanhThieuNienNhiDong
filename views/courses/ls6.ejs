@@ -927,14 +927,21 @@ toggleChapter(5);
 </script>
 <audio id="voiceIntro" src="/audio/khoahoc-voiceai.mp3"></audio>
 <script>
-  (function() {
+  var played = false;
+  function playVoice() {
+    if (played) return;
     var audio = document.getElementById('voiceIntro');
-    audio.play().catch(function() {
-      document.addEventListener('click', function() {
-        audio.play();
-      }, { once: true });
-    });
-  })();
+    audio.play().then(function() {
+      played = true;
+    }).catch(function() {});
+  }
+  document.addEventListener('touchstart', playVoice, { once: true });
+  document.addEventListener('touchend', playVoice, { once: true });
+  document.addEventListener('click', playVoice, { once: true });
+  document.addEventListener('scroll', playVoice, { once: true });
+  window.addEventListener('load', function() {
+    setTimeout(playVoice, 500);
+  });
 </script>
 </body>
 </html>
