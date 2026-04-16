@@ -925,22 +925,21 @@ function markDone(id) {
 // Open chapter 5 by default (most important for lớp 6)
 toggleChapter(5);
 </script>
-<audio id="voiceIntro" src="/audio/khoahoc-voiceai.mp3"></audio>
+<audio id="voiceIntro" src="/audio/khoahoc-voiceai.mp3" preload="auto"></audio>
 <script>
   var played = false;
-  function playVoice() {
+  function playVoice(e) {
     if (played) return;
+    played = true;
     var audio = document.getElementById('voiceIntro');
-    audio.play().then(function() {
-      played = true;
-    }).catch(function() {});
+    audio.volume = 1;
+    var p = audio.play();
+    if (p !== undefined) {
+      p.catch(function() { played = false; });
+    }
   }
-  document.addEventListener('touchstart', playVoice, { once: true });
-  document.addEventListener('touchend', playVoice, { once: true });
-  document.addEventListener('click', playVoice, { once: true });
-  document.addEventListener('scroll', playVoice, { once: true });
-  window.addEventListener('load', function() {
-    setTimeout(playVoice, 500);
+  ['click','touchstart','touchend','keydown','scroll','mousemove'].forEach(function(evt) {
+    document.addEventListener(evt, playVoice, { once: true, passive: true });
   });
 </script>
 </body>
