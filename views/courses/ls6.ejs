@@ -926,20 +926,18 @@ function markDone(id) {
 toggleChapter(5);
 </script>
 <audio id="voiceIntro" src="/audio/khoahoc-voiceai.mp3" preload="auto"></audio>
+<div id="audioPrompt" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:#ff7a1a;color:#fff;padding:10px 24px;border-radius:99px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(255,122,26,0.4);">
+  🔊 Bấm để nghe lời chào
+</div>
 <script>
-  var played = false;
-  function playVoice(e) {
-    if (played) return;
-    played = true;
-    var audio = document.getElementById('voiceIntro');
-    audio.volume = 1;
-    var p = audio.play();
-    if (p !== undefined) {
-      p.catch(function() { played = false; });
-    }
-  }
-  ['click','touchstart','touchend','keydown','scroll','mousemove'].forEach(function(evt) {
-    document.addEventListener(evt, playVoice, { once: true, passive: true });
+  var prompt = document.getElementById('audioPrompt');
+  var audio = document.getElementById('voiceIntro');
+  prompt.addEventListener('click', function() {
+    audio.play();
+    prompt.style.display = 'none';
+  });
+  audio.addEventListener('ended', function() {
+    prompt.style.display = 'none';
   });
 </script>
 </body>
