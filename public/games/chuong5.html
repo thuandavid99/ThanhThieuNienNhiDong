@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Trận Địa Bạch Đằng – Chương 5</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<style>
+*{font-family:"Times New Roman",Times,serif!important;box-sizing:border-box;user-select:none;-webkit-user-select:none;}
+body{margin:0;background:#020401;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;}
+#gw{position:relative;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;}
+canvas{max-width:100%;max-height:100%;aspect-ratio:1200/720;display:block;
+  box-shadow:0 0 120px rgba(0,0,0,1);cursor:none;touch-action:none;}
+
+/* ── Camera PiP ── */
+#cam-pip{position:absolute;bottom:14px;right:14px;width:168px;height:116px;
+  border:2px solid #5c3a10;border-radius:6px;overflow:hidden;background:#000;
+  box-shadow:0 4px 20px rgba(0,0,0,0.9);display:none;z-index:12;}
+#cam-pip video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+#cam-pip .plabel{position:absolute;bottom:0;left:0;right:0;text-align:center;
+  font-size:10px;color:#c89060;background:rgba(0,0,0,0.7);padding:2px 0;}
+#cam-dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;
+  background:#60e080;box-shadow:0 0 8px #60e080;animation:blink 1.1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+
+/* ── Start Screen ── */
+#start-screen{position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,#0e1408 0%,#020401 100%);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:20;}
+.war-frame{
+  background:radial-gradient(ellipse at top,#1a1208 0%,#0a0805 100%);
+  border:5px solid #5a3008;border-radius:12px;padding:40px 54px 36px;
+  max-width:820px;width:92%;text-align:center;
+  box-shadow:inset 0 0 80px rgba(0,0,0,0.9),0 0 60px rgba(120,60,10,0.2),0 30px 90px rgba(0,0,0,0.95);
+  position:relative;overflow:hidden;}
+.war-frame::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(-60deg,transparent,transparent 14px,rgba(0,0,0,0.08) 14px,rgba(0,0,0,0.08) 15px);
+  pointer-events:none;}
+.chapter-tag{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#6a3a10;margin-bottom:10px;}
+.war-title{font-size:46px;font-weight:bold;color:#e04010;
+  text-shadow:0 0 30px rgba(220,60,10,0.7),0 0 60px rgba(180,40,0,0.4),2px 2px 4px #000;
+  letter-spacing:4px;margin:0 0 6px;animation:warFlicker 4s infinite;position:relative;z-index:1;}
+@keyframes warFlicker{0%,100%{opacity:1}94%{opacity:1}96%{opacity:0.8}98%{opacity:1}}
+.war-sub{color:#6a3808;font-size:15px;letter-spacing:2px;margin-bottom:18px;position:relative;z-index:1;}
+.war-div{width:100%;height:2px;background:linear-gradient(90deg,transparent,#8b3010,transparent);margin:14px 0;position:relative;z-index:1;}
+.war-desc{color:#c8a070;font-size:20px;line-height:1.75;position:relative;z-index:1;}
+.war-desc b{color:#e08040;}
+.ai-guide{margin-top:16px;padding:14px 20px;background:rgba(0,0,0,0.5);
+  border:1px solid rgba(139,60,20,0.5);border-radius:6px;
+  color:#b89060;font-size:17px;line-height:1.65;position:relative;z-index:1;}
+.launch-btn{margin-top:24px;padding:14px 58px;font-size:24px;font-weight:bold;
+  background:linear-gradient(180deg,#c04010 0%,#6a1808 100%);color:#f8e8c0;
+  border:3px solid #f08040;border-radius:8px;cursor:pointer;transition:all 0.3s;
+  box-shadow:0 8px 30px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,180,100,0.25),0 0 30px rgba(180,60,10,0.2);
+  letter-spacing:2px;text-transform:uppercase;position:relative;z-index:1;
+  text-shadow:0 1px 3px rgba(0,0,0,0.8);}
+.launch-btn:hover{transform:translateY(-4px);background:linear-gradient(180deg,#e04818 0%,#8a2010 100%);
+  box-shadow:0 16px 50px rgba(0,0,0,0.8),0 0 50px rgba(220,80,20,0.4);}
+#load-st{margin-top:12px;font-size:14px;color:#704010;font-style:italic;position:relative;z-index:1;}
+
+/* ── Quiz Overlay ── */
+#quiz-overlay{position:absolute;inset:0;display:none;justify-content:center;align-items:flex-end;
+  z-index:15;pointer-events:none;padding-bottom:20px;}
+#quiz-overlay.active{display:flex;pointer-events:all;}
+.war-scroll{
+  background:linear-gradient(160deg,#1e1208 0%,#100a04 100%);
+  border:4px solid #7a3808;border-radius:12px;padding:28px 40px;
+  max-width:820px;width:90%;
+  box-shadow:0 0 60px rgba(180,60,10,0.3),inset 0 0 50px rgba(0,0,0,0.7);
+  position:relative;overflow:hidden;
+  animation:scrollUp 0.45s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes scrollUp{from{transform:translateY(60px) scale(0.95);opacity:0}to{transform:none;opacity:1}}
+.war-scroll::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(180,60,10,0.1),transparent 65%);pointer-events:none;}
+.q-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.q-icon{font-size:28px;}
+.q-topic{color:#e06020;font-size:14px;letter-spacing:3px;text-transform:uppercase;}
+.q-text{color:#f0e0c0;font-size:22px;font-weight:bold;line-height:1.55;text-align:center;margin-bottom:20px;}
+.q-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.q-opt{background:linear-gradient(160deg,#281808,#180e04);border:2px solid #6a3808;border-radius:8px;
+  padding:12px 16px;color:#d4a868;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;transition:all 0.2s;
+  box-shadow:0 3px 12px rgba(0,0,0,0.5);}
+.q-opt:hover{border-color:#e06020;color:#f8e090;background:linear-gradient(160deg,#381e08,#201008);
+  transform:translateY(-2px);box-shadow:0 0 20px rgba(180,80,10,0.3);}
+.q-key{width:28px;height:28px;flex-shrink:0;background:#8a3010;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;color:#f0d080;}
+.q-opt.correct{border-color:#30c060;background:linear-gradient(160deg,#0a2810,#051408);color:#80f090;}
+.q-opt.wrong  {border-color:#c02020;background:linear-gradient(160deg,#280808,#140404);color:#ff8080;}
+@keyframes correctPop{0%{transform:scale(0.92)}60%{transform:scale(1.05)}100%{transform:none}}
+@keyframes wrongShake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.q-opt.correct{animation:correctPop 0.35s;}
+.q-opt.wrong  {animation:wrongShake 0.4s;}
+.q-fb{display:none;text-align:center;font-size:16px;color:#b08040;margin-top:12px;line-height:1.55;
+  background:rgba(0,0,0,0.4);border-radius:6px;padding:10px 14px;border:1px solid rgba(120,60,10,0.4);}
+.q-next{display:none;margin:14px auto 0;padding:10px 42px;font-size:18px;font-weight:bold;
+  background:linear-gradient(180deg,#a84018,#6a2008);color:#f4d8a0;border:2px solid #e08040;
+  border-radius:6px;cursor:pointer;transition:all 0.3s;box-shadow:0 5px 18px rgba(0,0,0,0.6);}
+.q-next:hover{transform:translateY(-2px);}
+
+/* ── Win / Lose Overlay ── */
+#end-overlay{position:absolute;inset:0;display:none;justify-content:center;align-items:center;
+  z-index:18;pointer-events:none;}
+#end-overlay.active{display:flex;pointer-events:all;}
+.end-panel{text-align:center;padding:50px 70px;animation:endReveal 0.8s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes endReveal{from{transform:scale(0.4);opacity:0}to{transform:none;opacity:1}}
+.end-title{font-size:62px;font-weight:bold;}
+.end-sub  {font-size:24px;margin:12px 0;}
+.end-note {font-size:17px;line-height:1.65;margin-top:8px;}
+.end-replay{margin-top:24px;padding:12px 48px;font-size:20px;font-weight:bold;
+  background:linear-gradient(180deg,#b04020,#6a1808);color:#f4d8a0;
+  border:2px solid #e08040;border-radius:6px;cursor:pointer;transition:all 0.3s;
+  box-shadow:0 6px 20px rgba(0,0,0,0.7);}
+.end-replay:hover{transform:translateY(-3px);}
+</style>
+</head>
+<body>
+<div id="gw">
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Camera PiP -->
+  <div id="cam-pip">
+    <video id="cam-prev" playsinline autoplay muted></video>
+    <div id="cam-dot"></div>
+    <div class="plabel">✋ Hand AI</div>
+  </div>
+
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <div class="war-frame">
+      <div class="chapter-tag">✦ Lịch Sử Lớp 6 · Chương 5 ✦</div>
+      <h1 class="war-title">Trận Địa Bạch Đằng</h1>
+      <div class="war-sub">Hào khí Non sông – Mùa xuân năm 938</div>
+      <div class="war-div"></div>
+      <p class="war-desc">
+        Năm 938, Ngô Quyền quyết định dùng <b>kế cắm cọc</b> trên sông Bạch Đằng<br>
+        để tiêu diệt toàn bộ hạm đội quân Nam Hán do Lưu Hoằng Tháo chỉ huy.<br>
+        <b>Nhiệm vụ của em:</b> Cắm cọc trận địa → Trả lời câu hỏi<br>
+        để thuỷ triều rút → Đánh tan giặc ngoại xâm!
+      </p>
+      <div class="ai-guide">
+        ✋ <b>Chế độ AI:</b> Chụm ngón cái + ngón trỏ để <b>đóng cọc</b><br>
+        🖱️ <b>Chuột:</b> Click vào sông để đóng cọc · 📱 <b>Cảm ứng:</b> Chạm để đóng cọc
+      </div>
+      <button class="launch-btn" id="btn-start" style="display:none">⚔ XUẤT QUÂN</button>
+      <div id="load-st">Đang khởi động hệ thống AI thị giác...</div>
+    </div>
+  </div>
+
+  <!-- Quiz Overlay -->
+  <div id="quiz-overlay">
+    <div class="war-scroll">
+      <div class="q-header">
+        <span class="q-icon" id="q-icon">📜</span>
+        <span class="q-topic" id="q-topic">Câu hỏi lịch sử</span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-opts" id="q-opts"></div>
+      <div class="q-fb" id="q-fb"></div>
+      <div style="text-align:center"><button class="q-next" id="q-next">⚔ Tiếp tục chiến đấu!</button></div>
+    </div>
+  </div>
+
+  <!-- End Overlay -->
+  <div id="end-overlay">
+    <div class="end-panel" id="end-panel"></div>
+  </div>
+</div>
+
+<video id="cam-hidden" style="position:absolute;width:1px;height:1px;opacity:0" playsinline autoplay muted></video>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CANVAS SETUP
+// ═══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const CW = 1200, CH = 720;
+let DPR = 1;
+function setupCanvas() {
+  DPR = window.devicePixelRatio||1;
+  canvas.width = CW*DPR; canvas.height = CH*DPR;
+  ctx.scale(DPR, DPR);
+}
+setupCanvas();
+window.addEventListener('resize', setupCanvas);
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════════
+const lerp   = (a,b,t) => a+(b-a)*t;
+const clamp  = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+const rand   = (a,b) => a+Math.random()*(b-a);
+const τ = Math.PI*2;
+function drawRR(c,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2); c.beginPath();
+  c.moveTo(x+r,y); c.lineTo(x+w-r,y); c.quadraticCurveTo(x+w,y,x+w,y+r);
+  c.lineTo(x+w,y+h-r); c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  c.lineTo(x+r,y+h); c.quadraticCurveTo(x,y+h,x,y+h-r);
+  c.lineTo(x,y+r); c.quadraticCurveTo(x,y,x+r,y); c.closePath();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ═══════════════════════════════════════════════════════════════
+let AC = null;
+function initAudio() {
+  if(AC) return;
+  AC = new (window.AudioContext||window.webkitAudioContext)();
+  startRiverAmbience();
+}
+function tone(freq,type,dur,vol=0.1,delay=0) {
+  if(!AC) return;
+  const o=AC.createOscillator(), g=AC.createGain();
+  const t=AC.currentTime+delay;
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vol,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+dur);
+}
+function noise(dur,vol,filterFreq=600) {
+  if(!AC) return;
+  const sz=AC.sampleRate*dur, buf=AC.createBuffer(1,sz,AC.sampleRate);
+  const d=buf.getChannelData(0); for(let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+  const src=AC.createBufferSource();
+  const f=AC.createBiquadFilter(); f.type='bandpass'; f.frequency.value=filterFreq; f.Q.value=0.8;
+  const g=AC.createGain(); g.gain.value=vol;
+  src.buffer=buf; src.connect(f); f.connect(g); g.connect(AC.destination); src.start();
+}
+function startRiverAmbience() {
+  if(!AC) return;
+  const whiteNoise = ()=>{
+    const sz=AC.sampleRate*3, buf=AC.createBuffer(1,sz,AC.sampleRate);
+    const d=buf.getChannelData(0); for(let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+    const src=AC.createBufferSource(); src.buffer=buf; src.loop=true;
+    const f=AC.createBiquadFilter(); f.type='lowpass'; f.frequency.value=350;
+    const g=AC.createGain(); g.gain.value=0.055;
+    src.connect(f); f.connect(g); g.connect(AC.destination); src.start();
+  };
+  whiteNoise();
+}
+const SFX = {
+  hammer() {
+    // Thud + high crack
+    tone(60,'sawtooth',0.15,0.3); tone(200,'square',0.08,0.15,0.02);
+    noise(0.08,0.2,1800);
+    setTimeout(()=>{ tone(50,'sawtooth',0.12,0.2); noise(0.06,0.15,1400); },100);
+  },
+  splash() {
+    noise(0.25,0.18,500); tone(180,'sine',0.15,0.1,0.05);
+    tone(240,'sine',0.12,0.08,0.08);
+  },
+  shipCrash() {
+    tone(80,'sawtooth',0.4,0.25); tone(120,'sawtooth',0.3,0.2,0.05);
+    noise(0.4,0.3,300); noise(0.3,0.2,800,0.12);
+    setTimeout(()=>{ noise(0.6,0.15,200); },200);
+  },
+  drum() {
+    // War drum: deep boom
+    tone(55,'sine',0.5,0.3); tone(70,'sine',0.3,0.2,0.05);
+    noise(0.1,0.15,200);
+  },
+  drumRoll() {
+    for(let i=0;i<6;i++) setTimeout(()=>{ SFX.drum(); },i*140);
+  },
+  correct() {
+    tone(660,'sine',0.15,0.18); tone(880,'sine',0.2,0.14,0.1);
+    tone(1100,'sine',0.15,0.1,0.22);
+  },
+  wrong() { tone(180,'sawtooth',0.25,0.15); tone(150,'sawtooth',0.2,0.12,0.12); },
+  tide() {
+    // Rushing water sound
+    for(let i=0;i<5;i++) setTimeout(()=>noise(0.4,0.12,300+i*50),i*80);
+  },
+  win() {
+    SFX.drumRoll();
+    setTimeout(()=>{
+      [[523,0],[659,0.15],[784,0.3],[1047,0.5],[880,0.7],[1047,0.9]].forEach(([f,d])=>
+        tone(f,'sine',0.5,0.16,d));
+    },900);
+  },
+  lose() { for(let i=0;i<3;i++) setTimeout(()=>SFX.drum(),i*200); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════════
+const QUIZ_DATA = [
+  { icon:'📜', topic:'Khởi nghĩa Hai Bà Trưng',
+    q:'Khởi nghĩa Hai Bà Trưng bùng nổ vào năm nào?',
+    opts:['Năm 40 SCN','Năm 248 SCN','Năm 542 SCN','Năm 938 SCN'], ans:0,
+    explain:'<b>Năm 40 SCN</b>, Hai Bà Trưng (Trưng Trắc và Trưng Nhị) phất cờ khởi nghĩa chống quân Đông Hán, giành độc lập được 3 năm.',
+  },
+  { icon:'⚜️', topic:'Nước Vạn Xuân',
+    q:'Lý Bí lên ngôi, đặt tên nước là gì và có ý nghĩa gì?',
+    opts:['Đại Việt – đất nước lớn','Vạn Xuân – muôn đời độc lập','Âu Lạc – kế thừa Hùng Vương','Lĩnh Nam – phía nam dãy Ngũ Lĩnh'], ans:1,
+    explain:'<b>Vạn Xuân</b> (Năm 542) có nghĩa "Muôn ngàn mùa xuân", thể hiện ước vọng đất nước trường tồn và độc lập vĩnh viễn.',
+  },
+  { icon:'🏹', topic:'Triệu Quang Phục',
+    q:'Ai được nhân dân tôn xưng là "Dạ Trạch Vương" vì ẩn náu ở đầm Dạ Trạch?',
+    opts:['Mai Thúc Loan','Phùng Hưng','Triệu Quang Phục','Ngô Quyền'], ans:2,
+    explain:'<b>Triệu Quang Phục</b> dùng chiến thuật du kích trong đầm Dạ Trạch 6 năm, được tôn xưng là "Dạ Trạch Vương", sau giành lại nước Vạn Xuân.',
+  },
+  { icon:'🗡️', topic:'Họ Khúc tự chủ',
+    q:'Khúc Thừa Dụ xưng Tiết độ sứ năm 905 có ý nghĩa gì?',
+    opts:['Đánh bại hoàn toàn quân Nam Hán','Người Việt tự nắm quyền cai trị đất nước','Mở đầu thời kỳ Bắc thuộc','Chấm dứt triều đại nhà Đường'], ans:1,
+    explain:'<b>Năm 905</b>, Khúc Thừa Dụ chiếm quyền Tiết độ sứ, đặt nền móng cho thời kỳ tự chủ – người Việt tự cai quản đất nước dù danh nghĩa vẫn trong khuôn khổ nhà Đường.',
+  },
+  { icon:'⚔️', topic:'Chiến thắng Bạch Đằng 938',
+    q:'Chiến thắng Bạch Đằng năm 938 có ý nghĩa lịch sử gì?',
+    opts:['Mở ra thời kỳ Bắc thuộc lần 4','Chấm dứt hơn 1000 năm Bắc thuộc, mở kỷ nguyên độc lập','Thống nhất Bắc Nam lần đầu','Dời đô về thành Đại La'], ans:1,
+    explain:'<b>Chiến thắng Bạch Đằng 938</b> do Ngô Quyền chỉ huy đã <b>chấm dứt hơn 1000 năm Bắc thuộc</b>, mở ra kỷ nguyên độc lập lâu dài cho dân tộc Việt Nam.',
+  }
+];
+
+const MAX_STAKES = 5;
+const ENEMY_COUNT = 6;
+
+// ═══════════════════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════════════════
+let state       = 'START';  // START | PLANTING | BATTLE | QUIZ | TIDE | WIN | LOSE
+let time        = 0;
+let tideLevel   = 1.0;      // 1.0=full water, 0.0=low water
+let targetTide  = 1.0;
+let stakes      = [];
+let ships       = [];
+let particles   = [];
+let quizIdx     = 0;
+let quizLocked  = false;
+let sunkCount   = 0;
+let shakeDur    = 0, shakeAmt = 0;
+let warningPulse= 0;
+let drumBeat    = 0;        // for drum animation
+
+// AI Hand
+let pointerX = CW/2, pointerY = CH/2;
+let isPinching = false, wasP = false;
+let aiMode = false;
+
+// Cursor anim
+let hammerAngle = 0, hammerTarget = 0;
+let reticleSize = 30;
+
+// Shore / landscape
+const SHORE_Y = CH * 0.12;  // top shore line
+const RIVER_SURFACE = CH * 0.18;
+
+// ═══════════════════════════════════════════════════════════════
+//  PARTICLES
+// ═══════════════════════════════════════════════════════════════
+class Particle {
+  constructor(x,y,kind) {
+    this.x=x; this.y=y; this.kind=kind;
+    switch(kind) {
+      case 'splash':
+        this.vx=rand(-4,4); this.vy=rand(-8,-2);
+        this.size=rand(2,6); this.life=1; this.decay=rand(0.025,0.05);
+        this.col='rgba(160,220,240,'; break;
+      case 'wood':
+        this.vx=rand(-6,6); this.vy=rand(-9,-1);
+        this.size=rand(4,10); this.life=1; this.decay=rand(0.018,0.035);
+        this.rot=rand(0,τ); this.rotV=rand(-0.15,0.15);
+        this.col=rand(0,1)>0.5?'rgba(90,50,20,':'rgba(140,80,30,'; break;
+      case 'fire':
+        this.vx=rand(-2,2); this.vy=rand(-5,-1);
+        this.size=rand(6,18); this.life=1; this.decay=rand(0.03,0.055);
+        this.hue=rand(0,40); break;
+      case 'smoke':
+        this.vx=rand(-0.5,0.5); this.vy=rand(-1.2,-0.3);
+        this.size=rand(10,25); this.life=0.8; this.decay=rand(0.006,0.014);
+        this.col='rgba(60,40,20,'; break;
+      case 'foam':
+        this.vx=rand(-1,1); this.vy=rand(-1.5,0.5);
+        this.size=rand(3,8); this.life=1; this.decay=rand(0.02,0.04);
+        this.col='rgba(240,252,255,'; break;
+      case 'hammer':
+        this.vx=rand(-3,3); this.vy=rand(-4,-0.5);
+        this.size=rand(2,5); this.life=0.8; this.decay=0.05;
+        this.col='rgba(200,180,120,'; break;
+    }
+  }
+  update() {
+    this.x+=this.vx; this.y+=this.vy; this.life-=this.decay;
+    if(this.kind==='splash'||this.kind==='wood'||this.kind==='fire') this.vy+=0.25;
+    if(this.kind==='foam') { this.size+=0.08; this.vx*=0.95; }
+    if(this.kind==='fire') { this.vy-=0.05; this.size*=0.972; this.hue+=1; }
+    if(this.kind==='smoke') this.size+=0.3;
+    if(this.kind==='wood') this.rot+=this.rotV;
+  }
+  draw() {
+    if(this.life<=0) return;
+    const a=Math.max(0,this.life);
+    ctx.save(); ctx.globalAlpha=a;
+    if(this.kind==='fire') {
+      ctx.globalCompositeOperation='lighter';
+      const lum=40+a*40;
+      const fg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.size);
+      fg.addColorStop(0,`hsla(${this.hue+20},100%,${lum}%,1)`);
+      fg.addColorStop(0.5,`hsla(${this.hue},100%,${lum*0.5}%,0.7)`);
+      fg.addColorStop(1,`hsla(${this.hue},100%,5%,0)`);
+      ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,τ); ctx.fill();
+      ctx.globalCompositeOperation='source-over';
+    } else if(this.kind==='wood') {
+      ctx.translate(this.x,this.y); ctx.rotate(this.rot);
+      ctx.fillStyle=this.col+a+')'; ctx.shadowColor=this.col+'0.5)'; ctx.shadowBlur=3;
+      ctx.fillRect(-this.size/2,-this.size/2,this.size,this.size*0.4);
+    } else if(this.kind==='smoke') {
+      ctx.fillStyle=this.col+a*0.3+')';
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,τ); ctx.fill();
+    } else {
+      ctx.shadowColor=this.col+'0.8)'; ctx.shadowBlur=this.kind==='splash'?6:0;
+      ctx.fillStyle=this.col+a+')';
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,τ); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+function burst(x,y,kind,n){ for(let i=0;i<n;i++) particles.push(new Particle(x,y,kind)); }
+function shipExplosion(x,y) {
+  burst(x,y,'wood',30); burst(x,y,'splash',25);
+  burst(x,y,'fire',20); burst(x,y,'smoke',12);
+  SFX.shipCrash();
+  shakeDur=22; shakeAmt=14;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SHORE / LANDSCAPE
+// ═══════════════════════════════════════════════════════════════
+function drawShore() {
+  // Sky / mountain silhouette
+  const skyG=ctx.createLinearGradient(0,0,0,RIVER_SURFACE);
+  skyG.addColorStop(0,'#060e04'); skyG.addColorStop(0.5,'#0a1606'); skyG.addColorStop(1,'#0c1c08');
+  ctx.fillStyle=skyG; ctx.fillRect(0,0,CW,RIVER_SURFACE);
+
+  // Distant mountains
+  ctx.fillStyle='#0e1a0a';
+  ctx.beginPath(); ctx.moveTo(0,RIVER_SURFACE);
+  const mPts=[0,0.12,0.22,0.34,0.42,0.55,0.65,0.77,0.88,1.0];
+  const mH  =[0.9,0.4,0.65,0.3,0.55,0.45,0.7,0.35,0.6,0.9];
+  mPts.forEach((mx,i)=>{ const my=RIVER_SURFACE-mH[i]*(RIVER_SURFACE-4);
+    i===0?ctx.moveTo(mx*CW,my):ctx.lineTo(mx*CW,my); });
+  ctx.lineTo(CW,RIVER_SURFACE); ctx.closePath(); ctx.fill();
+
+  // Closer hills / jungle
+  ctx.fillStyle='#0c1608';
+  ctx.beginPath(); ctx.moveTo(0,RIVER_SURFACE);
+  for(let x=0;x<=CW;x+=30) {
+    const y=RIVER_SURFACE-(Math.sin(x*0.012+1)*0.3+0.15)*(RIVER_SURFACE-8);
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.lineTo(CW,RIVER_SURFACE); ctx.closePath(); ctx.fill();
+
+  // Mist layer at shore
+  const mist=ctx.createLinearGradient(0,RIVER_SURFACE-30,0,RIVER_SURFACE+40);
+  mist.addColorStop(0,'rgba(100,180,160,0)');
+  mist.addColorStop(0.5,'rgba(100,180,160,0.12)');
+  mist.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=mist; ctx.fillRect(0,RIVER_SURFACE-30,CW,70);
+
+  // Moonrise (atmospheric detail)
+  const moonX=CW*0.82, moonY=RIVER_SURFACE*0.3;
+  const moonG=ctx.createRadialGradient(moonX,moonY,0,moonX,moonY,40);
+  moonG.addColorStop(0,'rgba(230,220,180,0.6)');
+  moonG.addColorStop(0.3,'rgba(200,190,140,0.25)');
+  moonG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=moonG; ctx.beginPath(); ctx.arc(moonX,moonY,40,0,τ); ctx.fill();
+  ctx.fillStyle='rgba(230,220,180,0.5)';
+  ctx.beginPath(); ctx.arc(moonX,moonY,18,0,τ); ctx.fill();
+
+  // Moon reflection on water
+  ctx.save();
+  ctx.globalAlpha=0.15+0.05*Math.sin(time*0.04);
+  const refG=ctx.createLinearGradient(moonX,RIVER_SURFACE,moonX,CH);
+  refG.addColorStop(0,'rgba(230,220,180,0.4)'); refG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=refG;
+  ctx.fillRect(moonX-20,RIVER_SURFACE,40,CH);
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RIVER WATER
+// ═══════════════════════════════════════════════════════════════
+function drawRiver() {
+  const tide = tideLevel;
+  const waterSurface = RIVER_SURFACE + tide * 30; // rises with tide
+
+  // Deep water base
+  const wG=ctx.createLinearGradient(0,waterSurface,0,CH);
+  wG.addColorStop(0,`rgba(8,36,44,${0.85+tide*0.15})`);
+  wG.addColorStop(0.4,`rgba(6,26,32,0.95)`);
+  wG.addColorStop(1,'rgba(2,8,10,1)');
+  ctx.fillStyle=wG; ctx.fillRect(0,waterSurface,CW,CH);
+
+  // Sine wave layers (5 layers)
+  for(let i=0;i<5;i++) {
+    const layerY = waterSurface + i*(CH-waterSurface)/5;
+    const speed  = time*(0.025+i*0.006);
+    const amp    = 6+i*3;
+    const freq   = 0.008+i*0.003;
+    const col    = i<2
+      ? `rgba(30,80,90,${0.18-i*0.03})`
+      : `rgba(20,60,70,${0.12-i*0.02})`;
+
+    ctx.beginPath();
+    for(let x=0;x<=CW;x+=8) {
+      const y=layerY+Math.sin(x*freq+speed)*amp+Math.cos(x*freq*0.7-speed*0.6)*amp*0.5;
+      x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.lineTo(CW,CH); ctx.lineTo(0,CH); ctx.closePath();
+    ctx.fillStyle=col; ctx.fill();
+    ctx.strokeStyle=`rgba(60,130,145,${0.12-i*0.02})`; ctx.lineWidth=1.2;
+    ctx.stroke();
+  }
+
+  // Tide surface shimmer (more shimmer when low tide = revealing stakes)
+  const shimmerAlpha = (1-tide)*0.25;
+  if(shimmerAlpha>0.02) {
+    for(let x=60;x<CW-60;x+=80) {
+      const sy=waterSurface+10+Math.sin(x*0.04+time*0.08)*8;
+      ctx.strokeStyle=`rgba(180,230,240,${shimmerAlpha*Math.random()})`;
+      ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x,sy); ctx.lineTo(x+40,sy); ctx.stroke();
+    }
+  }
+
+  // Tide level overlay (semi-transparent "tide water")
+  if(tide>0.05) {
+    const tideG=ctx.createLinearGradient(0,waterSurface,0,waterSurface+tide*(CH-waterSurface)*0.6);
+    tideG.addColorStop(0,`rgba(20,80,100,${tide*0.45})`);
+    tideG.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=tideG; ctx.fillRect(0,waterSurface,CW,CH);
+  }
+
+  // Bank shores (left and right)
+  [0, CW-100].forEach(bx=>{
+    const bg=ctx.createLinearGradient(bx,0,bx+(bx?-100:100),0);
+    bg.addColorStop(0,'rgba(18,26,12,0.9)');
+    bg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=bg; ctx.fillRect(bx,waterSurface,bx?100:-100,CH);
+    // Bank texture: reeds
+    for(let ry=waterSurface+20;ry<CH;ry+=18) {
+      ctx.strokeStyle=`rgba(30,50,20,${0.4+0.2*Math.random()})`;
+      ctx.lineWidth=2;
+      const rx=bx===0?rand(10,55):rand(CW-55,CW-10);
+      ctx.beginPath(); ctx.moveTo(rx,ry);
+      ctx.quadraticCurveTo(rx+(rand(-8,8)),ry-14,rx+rand(-4,4),ry-28);
+      ctx.stroke();
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STAKES
+// ═══════════════════════════════════════════════════════════════
+function drawStakes() {
+  stakes.forEach((st,i)=>{
+    const tide = tideLevel;
+    // How much of stake is visible above water
+    const visH = (1-tide) * 80 + (tide<0.3?20:0);
+    const alpha = tide > 0.6 ? 0.35 + (1-tide)*0.65 : 1.0;
+    const waterY = RIVER_SURFACE + tide*30;
+    const tipY   = st.y - visH;
+    const baseY  = st.y + 8;
+
+    ctx.save();
+
+    // Underwater glow when tide is low
+    if(tide<0.5) {
+      ctx.globalAlpha=(1-tide)*0.5;
+      const ug=ctx.createRadialGradient(st.x,st.y,0,st.x,st.y,40);
+      ug.addColorStop(0,'rgba(180,120,50,0.6)'); ug.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=ug; ctx.beginPath(); ctx.arc(st.x,st.y,40,0,τ); ctx.fill();
+      ctx.globalAlpha=1;
+    }
+
+    ctx.globalAlpha=alpha;
+
+    // Stake shadow on water
+    ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=8;
+    ctx.fillStyle='rgba(0,0,0,0.3)';
+    ctx.beginPath(); ctx.ellipse(st.x+5, st.y+5, 10, 5, 0, 0, τ); ctx.fill();
+    ctx.shadowBlur=0;
+
+    // Trunk with wood gradient
+    const stG=ctx.createLinearGradient(st.x-9,0,st.x+9,0);
+    stG.addColorStop(0,'#1e0e04'); stG.addColorStop(0.35,'#6a3c18');
+    stG.addColorStop(0.65,'#8b5a2b'); stG.addColorStop(1,'#2c1408');
+    ctx.fillStyle=stG;
+    ctx.beginPath();
+    ctx.moveTo(st.x-9, baseY);
+    ctx.lineTo(st.x-6, waterY);
+    ctx.lineTo(st.x-4, tipY+18);
+    ctx.lineTo(st.x,   tipY);   // Sharp tip
+    ctx.lineTo(st.x+4, tipY+18);
+    ctx.lineTo(st.x+6, waterY);
+    ctx.lineTo(st.x+9, baseY);
+    ctx.closePath(); ctx.fill();
+
+    // Wood grain rings
+    ctx.globalAlpha=alpha*0.3;
+    for(let r=0;r<3;r++) {
+      const ry=baseY-15-r*18;
+      if(ry>tipY) {
+        ctx.strokeStyle='#1a0a02'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.ellipse(st.x,ry,8-r,3,0,0,τ); ctx.stroke();
+      }
+    }
+    ctx.globalAlpha=alpha;
+
+    // Tip glint (dangerous sharp tip)
+    if(tide<0.4) {
+      ctx.fillStyle=`rgba(200,160,80,${(1-tide)*0.8})`;
+      ctx.beginPath(); ctx.arc(st.x,tipY+3,3,0,τ); ctx.fill();
+    }
+
+    // Water ripple around stake
+    const rAlpha=(0.2+0.15*Math.sin(time*0.12+i))*alpha;
+    ctx.strokeStyle=`rgba(140,200,220,${rAlpha})`; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.ellipse(st.x,waterY,14+Math.sin(time*0.1+i)*3,6,0,0,τ); ctx.stroke();
+
+    // Number badge
+    if(tide>0.5) {
+      ctx.fillStyle='rgba(255,220,120,0.8)';
+      ctx.font='bold 14px "Times New Roman"'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(i+1, st.x, waterY-14);
+    }
+
+    ctx.restore();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ENEMY SHIPS
+// ═══════════════════════════════════════════════════════════════
+class EnemyShip {
+  constructor(x,delay) {
+    this.x=x; this.y=-120-delay*80;
+    this.speed=rand(0.4,0.8); this.bob=rand(0,τ);
+    this.angle=0; this.sunk=false; this.sinkAnim=0;
+    this.fireTimer=0; this.w=56; this.h=90;
+    this.wakeTimer=0;
+  }
+  update() {
+    if(this.sunk) { this.sinkAnim+=0.03; return; }
+    this.y+=this.speed; this.bob+=0.04;
+    this.angle=Math.sin(this.bob)*0.04;
+    this.wakeTimer++;
+
+    // Collision check (when tide is low enough)
+    if(tideLevel<0.45) {
+      for(const st of stakes) {
+        const dx=this.x-st.x, dy=this.y-st.y;
+        if(Math.sqrt(dx*dx+dy*dy)<36) {
+          this.sunk=true;
+          shipExplosion(this.x,this.y);
+          sunkCount++;
+          checkVictory();
+          return;
+        }
+      }
+    }
+  }
+  draw() {
+    if(this.sinkAnim>1.5) return;
+    const bob=Math.sin(this.bob)*3;
+    ctx.save();
+    ctx.translate(this.x, this.y+bob);
+    if(this.sunk) {
+      ctx.rotate(this.sinkAnim*Math.PI*0.5);
+      ctx.globalAlpha=Math.max(0,1-this.sinkAnim*0.7);
+    } else {
+      ctx.rotate(this.angle);
+    }
+
+    // Wake trails from bow
+    if(!this.sunk&&this.wakeTimer%3===0) {
+      particles.push(new Particle(this.x+rand(-12,12), this.y+40, 'foam'));
+    }
+
+    // Shadow
+    ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=14; ctx.shadowOffsetY=8;
+
+    // Hull (junk-style Chinese warship)
+    ctx.fillStyle='#4a1a08';
+    ctx.beginPath();
+    ctx.moveTo(0, 44);  // Bow (pointed bottom)
+    ctx.bezierCurveTo(28, 26, 26,-28, 20,-40);
+    ctx.lineTo(-20,-40);
+    ctx.bezierCurveTo(-26,-28,-28,26, 0,44);
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='#1a0804'; ctx.lineWidth=2; ctx.stroke();
+
+    // Hull planks
+    ctx.strokeStyle='rgba(30,10,2,0.5)'; ctx.lineWidth=1;
+    for(let p=-3;p<=3;p++) {
+      ctx.beginPath(); ctx.moveTo(p*7,-38); ctx.lineTo(p*5,40); ctx.stroke();
+    }
+
+    // Deck
+    const dG=ctx.createLinearGradient(-18,-10,18,-10);
+    dG.addColorStop(0,'#2a0e04'); dG.addColorStop(0.5,'#6a2810'); dG.addColorStop(1,'#2a0e04');
+    ctx.fillStyle=dG;
+    ctx.beginPath(); ctx.ellipse(0,-2,18,10,0,0,τ); ctx.fill();
+
+    // Mast
+    ctx.fillStyle='#1e0a02'; ctx.fillRect(-2,-38,4,50);
+    ctx.fillRect(-24,-28,48,5);
+
+    // Sail (dark red — enemy color)
+    ctx.fillStyle='rgba(140,10,10,0.85)';
+    const sw=Math.sin(time*0.06)*5;
+    ctx.beginPath();
+    ctx.moveTo(-24,-24); ctx.quadraticCurveTo(sw,-4,24,-24);
+    ctx.lineTo(20,-4); ctx.quadraticCurveTo(sw,8,-20,-4); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#600808'; ctx.lineWidth=1; ctx.stroke();
+
+    // Enemy banner (skull-ish symbol)
+    ctx.fillStyle='rgba(200,180,100,0.7)';
+    ctx.font='12px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    try{ctx.fillText('☠',0,-14);}catch(e){}
+
+    // Fire if ship is in trouble (low tide approaching)
+    if(tideLevel<0.3&&!this.sunk&&Math.random()<0.04) {
+      particles.push(new Particle(this.x+rand(-10,10), this.y-35,'fire'));
+    }
+
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HAND CURSOR / HAMMER
+// ═══════════════════════════════════════════════════════════════
+function drawCursor() {
+  const pinch = isPinching;
+  hammerTarget = pinch ? -Math.PI*0.35 : 0;
+  hammerAngle  = lerp(hammerAngle, hammerTarget, 0.18);
+  reticleSize  = lerp(reticleSize, pinch ? 14 : 30, 0.15);
+
+  ctx.save(); ctx.translate(pointerX, pointerY);
+
+  if(state==='PLANTING') {
+    // Crosshair ring
+    const ringCol = pinch ? '#60ff80' : '#f0a030';
+    ctx.strokeStyle=ringCol; ctx.lineWidth=2;
+    ctx.shadowColor=ringCol; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(0,0,reticleSize,0,τ); ctx.stroke();
+    // Cross lines
+    const cl=reticleSize+12;
+    [[0,-cl,0,-reticleSize-6],[0,cl,0,reticleSize+6],[-cl,0,-reticleSize-6,0],[cl,0,reticleSize+6,0]]
+      .forEach(([x1,y1,x2,y2])=>{
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+    ctx.shadowBlur=0;
+
+    // Hammer body
+    ctx.rotate(hammerAngle);
+    ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=10; ctx.shadowOffsetY=pinch?14:6;
+    // Handle
+    const hG=ctx.createLinearGradient(-3,0,3,0);
+    hG.addColorStop(0,'#3e200c'); hG.addColorStop(0.5,'#8b5a2b'); hG.addColorStop(1,'#2a1408');
+    ctx.fillStyle=hG; ctx.fillRect(-3.5,0,7,44);
+    // Head
+    const hdG=ctx.createLinearGradient(-22,-16,22,16);
+    hdG.addColorStop(0,'#1a0e06'); hdG.addColorStop(0.4,'#4a2a12'); hdG.addColorStop(1,'#2c1808');
+    ctx.fillStyle=hdG;
+    drawRR(ctx,-22,-18,44,32,5); ctx.fill();
+    ctx.strokeStyle='#5c3a21'; ctx.lineWidth=1.5;
+    drawRR(ctx,-22,-18,44,32,5); ctx.stroke();
+    // Metal shine
+    ctx.globalAlpha=0.3;
+    ctx.fillStyle='rgba(200,180,120,0.6)';
+    ctx.fillRect(-20,-16,42,8);
+    ctx.globalAlpha=1;
+    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+
+    // Stake count indicator
+    ctx.rotate(-hammerAngle);
+    const rem=MAX_STAKES-stakes.length;
+    if(rem>0) {
+      ctx.fillStyle='rgba(240,200,80,0.9)';
+      ctx.font='bold 14px "Times New Roman"';
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(`${stakes.length}/${MAX_STAKES}`, 0, reticleSize+4);
+    }
+  } else {
+    // Simple glowing dot
+    ctx.fillStyle='rgba(240,160,40,0.7)'; ctx.shadowColor='#f0a020'; ctx.shadowBlur=16;
+    ctx.beginPath(); ctx.arc(0,0,6,0,τ); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HUD
+// ═══════════════════════════════════════════════════════════════
+function drawHUD() {
+  // Phase indicator
+  const phaseMap = {
+    PLANTING:`⚒ Đóng cọc: ${stakes.length} / ${MAX_STAKES}`,
+    BATTLE:'⚔ Quân Nam Hán tiến vào!',
+    QUIZ:'📜 Trả lời đúng để rút nước!',
+    TIDE:'🌊 Thuỷ triều đang rút!'
+  };
+  const pText = phaseMap[state] || '';
+  if(pText) {
+    ctx.save();
+    ctx.fillStyle='rgba(8,18,10,0.82)';
+    drawRR(ctx,14,14,300,58,6); ctx.fill();
+    ctx.strokeStyle='rgba(100,60,20,0.8)'; ctx.lineWidth=1.5;
+    drawRR(ctx,14,14,300,58,6); ctx.stroke();
+    ctx.fillStyle='#e08030'; ctx.font='bold 16px "Times New Roman"';
+    ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText('TRẬN ĐỊA BẠCH ĐẰNG',22,20);
+    ctx.fillStyle= state==='BATTLE'||state==='TIDE'?'#ff6030':'#b09050';
+    ctx.font='14px "Times New Roman"';
+    ctx.fillText(pText,22,42);
+    ctx.restore();
+  }
+
+  // Tide meter (right side)
+  if(state==='BATTLE'||state==='QUIZ'||state==='TIDE') {
+    const mx=CW-26, my=CH*0.25, mh=CH*0.5;
+    ctx.save();
+    // Track
+    ctx.fillStyle='rgba(6,14,8,0.8)';
+    drawRR(ctx,mx-12,my,24,mh,6); ctx.fill();
+    ctx.strokeStyle='rgba(80,50,20,0.7)'; ctx.lineWidth=1.5;
+    drawRR(ctx,mx-12,my,24,mh,6); ctx.stroke();
+    // Fill (water level)
+    const fh=mh*tideLevel;
+    if(fh>2) {
+      const tG=ctx.createLinearGradient(0,my+mh-fh,0,my+mh);
+      tG.addColorStop(0,'rgba(40,160,180,0.9)'); tG.addColorStop(1,'rgba(20,80,100,0.95)');
+      ctx.fillStyle=tG;
+      drawRR(ctx,mx-10,my+mh-fh+2,20,fh-2,4); ctx.fill();
+    }
+    // Label
+    ctx.fillStyle='#60c0d0'; ctx.font='bold 11px "Times New Roman"';
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText('THUỶ',mx,my-4); ctx.fillText('TRIỀU',mx,my-4+14);
+    const pct=Math.round(tideLevel*100);
+    ctx.fillStyle= pct<40?'#f06030':'#60c0d0';
+    ctx.fillText(pct+'%',mx,my+mh+18);
+    // Warning pulse
+    if(pct<30) {
+      warningPulse+=0.1;
+      ctx.globalAlpha=0.5+0.5*Math.sin(warningPulse);
+      ctx.strokeStyle='#f06030'; ctx.lineWidth=3; ctx.shadowColor='#f06030'; ctx.shadowBlur=12;
+      drawRR(ctx,mx-12,my,24,mh,6); ctx.stroke();
+      ctx.globalAlpha=1; ctx.shadowBlur=0;
+    }
+    ctx.restore();
+  }
+
+  // Ships sunk counter
+  if(ships.length>0) {
+    ctx.save();
+    ctx.fillStyle='rgba(8,18,10,0.8)';
+    drawRR(ctx,CW-160,14,146,50,6); ctx.fill();
+    ctx.strokeStyle='rgba(100,40,20,0.8)'; ctx.lineWidth=1.5;
+    drawRR(ctx,CW-160,14,146,50,6); ctx.stroke();
+    ctx.fillStyle='#e06030'; ctx.font='bold 14px "Times New Roman"';
+    ctx.textAlign='right'; ctx.textBaseline='top';
+    ctx.fillText('Tàu giặc bị đánh chìm',CW-20,20);
+    ctx.fillStyle='#f0d080'; ctx.font='bold 20px "Times New Roman"';
+    ctx.fillText(`${sunkCount} / ${ships.length}`,CW-20,38);
+    ctx.restore();
+  }
+
+  // AI mode badge
+  ctx.save();
+  ctx.fillStyle=aiMode?'rgba(20,60,30,0.75)':'rgba(30,20,10,0.65)';
+  drawRR(ctx,14,80,180,24,12); ctx.fill();
+  ctx.fillStyle=aiMode?'#80f0a0':'#b09060';
+  ctx.font='11px "Times New Roman"'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(aiMode?'✋ AI Hand Tracking':'🖱️ Chuột / Cảm ứng',104,92);
+  ctx.restore();
+
+  // Planting phase instruction
+  if(state==='PLANTING'&&stakes.length<MAX_STAKES) {
+    const a=0.5+0.3*Math.sin(time*0.06);
+    ctx.save(); ctx.globalAlpha=a;
+    ctx.fillStyle='#e09050'; ctx.font='italic 18px "Times New Roman"';
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText(aiMode?'Chụm 2 ngón tay để đóng cọc':'Click vào sông để đóng cọc',CW/2,CH-14);
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STAKE PLANTING
+// ═══════════════════════════════════════════════════════════════
+function plantStake(x,y) {
+  if(state!=='PLANTING'||stakes.length>=MAX_STAKES) return;
+  // Clamp to river area
+  const sy=clamp(y, RIVER_SURFACE+40, CH-60);
+  stakes.push({x:clamp(x,80,CW-80), y:sy});
+  SFX.hammer();
+  burst(x,sy,'splash',18); burst(x,sy,'hammer',10);
+  // Impact ring
+  particles.push(...Array.from({length:12},()=>new Particle(x,sy,'foam')));
+  shakeDur=8; shakeAmt=5;
+  if(stakes.length===MAX_STAKES) {
+    setTimeout(startBattle,1200);
+  }
+}
+
+function startBattle() {
+  state='BATTLE';
+  SFX.drumRoll();
+  // Spawn ships
+  for(let i=0;i<ENEMY_COUNT;i++) {
+    ships.push(new EnemyShip(
+      rand(140,CW-140),  // random x
+      i                   // delay offset
+    ));
+  }
+  setTimeout(showQuiz,3500);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════════════════════════════
+function showQuiz() {
+  if(quizIdx>=QUIZ_DATA.length||state==='WIN'||state==='LOSE') return;
+  state='QUIZ';
+  const q=QUIZ_DATA[quizIdx];
+  document.getElementById('q-icon').textContent=q.icon;
+  document.getElementById('q-topic').textContent=q.topic;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-fb').style.display='none';
+  document.getElementById('q-next').style.display='none';
+  const container=document.getElementById('q-opts');
+  container.innerHTML='';
+  const keys=['A','B','C','D'];
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='q-opt';
+    btn.innerHTML=`<span class="q-key">${keys[i]}</span>${opt}`;
+    btn.onclick=()=>handleQ(i,q,btn);
+    container.appendChild(btn);
+  });
+  document.getElementById('quiz-overlay').classList.add('active');
+  quizLocked=false;
+}
+
+function handleQ(i,q,btn) {
+  if(quizLocked) return; quizLocked=true;
+  const correct=(i===q.ans);
+  if(correct) {
+    btn.classList.add('correct'); SFX.correct(); SFX.tide();
+    targetTide=Math.max(0, tideLevel-0.2);
+    document.getElementById('q-fb').innerHTML=
+      `✅ <b style="color:#80f090">Chính xác!</b> Thuỷ triều rút ${Math.round(20)}%<br><br>${q.explain}`;
+    if(targetTide<=0) {
+      document.getElementById('q-fb').innerHTML+=
+        '<br><b style="color:#f0d060">🌊 Thuỷ triều rút hoàn toàn! Cọc lộ ra! ⚔ Tấn công!</b>';
+    }
+  } else {
+    btn.classList.add('wrong'); SFX.wrong();
+    // Ships speed up
+    ships.forEach(s=>{ if(!s.sunk) s.speed+=0.25; });
+    document.getElementById('q-fb').innerHTML=
+      `❌ <b style="color:#ff8060">Sai rồi!</b> Quân giặc tăng tốc tiến công!<br><br>${q.explain}`;
+    document.querySelectorAll('.q-opt')[q.ans].classList.add('correct');
+  }
+  document.getElementById('q-fb').style.display='block';
+  document.getElementById('q-next').style.display='block';
+}
+
+document.getElementById('q-next').addEventListener('click',()=>{
+  document.getElementById('quiz-overlay').classList.remove('active');
+  quizIdx++;
+  tideLevel=targetTide=Math.max(0,tideLevel-0.2*(QUIZ_DATA[quizIdx-1]&&quizIdx>0?1:0));
+  if(quizIdx<QUIZ_DATA.length&&!checkVictory()) {
+    state='BATTLE';
+    setTimeout(showQuiz,3000);
+  } else if(!checkVictory()) {
+    state='BATTLE';
+  }
+});
+
+function checkVictory() {
+  if(sunkCount>=ships.length&&ships.length>0) {
+    state='WIN';
+    setTimeout(()=>{
+      SFX.win();
+      burst(CW/2,CH/2,'fire',30); burst(CW/2,CH/2,'splash',20);
+      const p=document.getElementById('end-panel');
+      p.innerHTML=`
+        <div class="end-title" style="color:#f0d820;text-shadow:0 0 40px rgba(240,200,32,0.9)">
+          ⚔ ĐẠI THẮNG! ⚔</div>
+        <div class="end-sub" style="color:#f0e090">Chiến thắng Bạch Đằng 938!</div>
+        <div class="end-note" style="color:#c0a060">
+          Toàn bộ hạm đội Nam Hán đã bị đánh chìm!<br>
+          <b style="color:#f0c820">Ngô Quyền kết thúc hơn 1000 năm Bắc thuộc!</b><br>
+          Mở ra kỷ nguyên độc lập vĩnh viễn cho dân tộc Việt Nam.
+        </div>
+        <button class="end-replay" id="btn-replay">↺ Chiến đấu lại</button>`;
+      document.getElementById('end-overlay').classList.add('active');
+      document.getElementById('btn-replay').onclick=resetGame;
+    },1500);
+    return true;
+  }
+  // Check if all ships passed (lose)
+  const allPassed=ships.length>0&&ships.every(s=>!s.sunk&&s.y>CH+100);
+  if(allPassed&&state==='BATTLE') {
+    state='LOSE'; SFX.lose();
+    const p=document.getElementById('end-panel');
+    p.innerHTML=`
+      <div class="end-title" style="color:#c03010">⚔ THẤT BẠI ⚔</div>
+      <div class="end-sub" style="color:#e07040">Quân Nam Hán đã vượt qua bãi cọc!</div>
+      <div class="end-note" style="color:#b08050">
+        Hãy đóng cọc đúng vị trí và trả lời nhanh hơn!
+      </div>
+      <button class="end-replay" id="btn-replay">↺ Thử lại</button>`;
+    document.getElementById('end-overlay').classList.add('active');
+    document.getElementById('btn-replay').onclick=resetGame;
+    return true;
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════════════════
+function resetGame() {
+  document.getElementById('end-overlay').classList.remove('active');
+  document.getElementById('quiz-overlay').classList.remove('active');
+  stakes=[]; ships=[]; particles=[]; sunkCount=0; quizIdx=0;
+  tideLevel=1.0; targetTide=1.0; shakeDur=0; warningPulse=0; drumBeat=0;
+  state='PLANTING';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GAME LOOP
+// ═══════════════════════════════════════════════════════════════
+function gameLoop() {
+  time++;
+
+  // Smooth tide
+  if(Math.abs(tideLevel-targetTide)>0.001) {
+    tideLevel=lerp(tideLevel,targetTide,0.015);
+    if(tideLevel<0.01) { tideLevel=0; targetTide=0; }
+  }
+
+  // Drum beat animation
+  drumBeat+=0.06;
+
+  // Camera shake
+  let sx=0,sy=0;
+  if(shakeDur>0){ sx=(Math.random()-0.5)*shakeAmt; sy=(Math.random()-0.5)*shakeAmt*0.4; shakeDur--; }
+
+  ctx.save(); ctx.translate(sx,sy);
+
+  // Scene
+  drawShore();
+  drawRiver();
+
+  // Particles behind stakes
+  particles.forEach(p=>{ if(p.kind==='foam'||p.kind==='smoke') p.draw(); });
+
+  // Stakes
+  drawStakes();
+
+  // Ships
+  ships.forEach(s=>{ s.update(); s.draw(); });
+
+  // Foreground particles
+  particles.forEach(p=>{ if(p.kind!=='foam'&&p.kind!=='smoke') p.draw(); });
+  for(let i=particles.length-1;i>=0;i--){ particles[i].update(); if(particles[i].life<=0) particles.splice(i,1); }
+
+  // Cursor
+  drawCursor();
+
+  // HUD
+  drawHUD();
+
+  // Win glow overlay
+  if(state==='WIN') {
+    const wg=ctx.createRadialGradient(CW/2,CH/2,0,CW/2,CH/2,600);
+    wg.addColorStop(0,`rgba(240,180,20,${0.1+0.05*Math.sin(time*0.05)})`);
+    wg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=wg; ctx.fillRect(0,0,CW,CH);
+  }
+
+  ctx.restore();
+  requestAnimationFrame(gameLoop);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INPUT
+// ═══════════════════════════════════════════════════════════════
+function getCP(clientX,clientY) {
+  const rect=canvas.getBoundingClientRect();
+  return { x:(clientX-rect.left)*(CW/rect.width), y:(clientY-rect.top)*(CH/rect.height) };
+}
+canvas.addEventListener('mousemove',e=>{
+  const p=getCP(e.clientX,e.clientY); pointerX=p.x; pointerY=p.y;
+});
+canvas.addEventListener('click',e=>{
+  if(state!=='PLANTING') return;
+  const p=getCP(e.clientX,e.clientY); plantStake(p.x,p.y);
+});
+canvas.addEventListener('touchmove',e=>{ e.preventDefault();
+  const t=e.touches[0], p=getCP(t.clientX,t.clientY); pointerX=p.x; pointerY=p.y;
+},{passive:false});
+canvas.addEventListener('touchstart',e=>{ e.preventDefault();
+  const t=e.touches[0], p=getCP(t.clientX,t.clientY);
+  pointerX=p.x; pointerY=p.y;
+  if(state==='PLANTING') plantStake(p.x,p.y);
+},{passive:false});
+
+// ═══════════════════════════════════════════════════════════════
+//  MEDIAPIPE HANDS
+// ═══════════════════════════════════════════════════════════════
+function initHandAI() {
+  try {
+    if(typeof Hands==='undefined') throw new Error('Hands not loaded');
+    const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+    hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:0.6,minTrackingConfidence:0.55});
+    hands.onResults(res=>{
+      if(!res.multiHandLandmarks||!res.multiHandLandmarks.length) { isPinching=false; return; }
+      const lm=res.multiHandLandmarks[0];
+      const idx=lm[8], thu=lm[4];
+      pointerX=(1-idx.x)*CW; pointerY=idx.y*CH;
+      const d=Math.hypot(idx.x-thu.x,idx.y-thu.y);
+      const prev=isPinching; isPinching=d<0.07;
+      if(isPinching&&!prev&&state==='PLANTING') plantStake(pointerX,pointerY);
+      wasP=isPinching; aiMode=true;
+    });
+    const vid=document.getElementById('cam-hidden');
+    const cam=new Camera(vid,{onFrame:async()=>{await hands.send({image:vid});},width:320,height:240});
+    cam.start().then(()=>{
+      aiMode=true;
+      document.getElementById('cam-pip').style.display='block';
+      const prev=document.getElementById('cam-prev');
+      vid.addEventListener('play',()=>{ try{prev.srcObject=vid.srcObject;}catch(e){} });
+    }).catch(()=>{ aiMode=false; });
+  } catch(e){ console.warn('HandAI unavailable:',e.message); aiMode=false; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════════
+setTimeout(()=>{
+  document.getElementById('load-st').textContent='Hệ thống sẵn sàng!';
+  document.getElementById('btn-start').style.display='inline-block';
+},1600);
+
+document.getElementById('btn-start').addEventListener('click',()=>{
+  initAudio(); initHandAI();
+  state='PLANTING';
+  document.getElementById('start-screen').style.display='none';
+  requestAnimationFrame(gameLoop);
+});
+
+// Animated background on start screen
+(function bgPreview(){
+  if(document.getElementById('start-screen').style.display!=='none'){
+    drawShore(); drawRiver(); time+=0.04; requestAnimationFrame(bgPreview);
+  }
+})();
+</script>
+</body>
+</html>

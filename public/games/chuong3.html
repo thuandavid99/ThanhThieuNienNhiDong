@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>La Bàn Học Giả – Chương 3</title>
+<style>
+* {
+  font-family: "Times New Roman", Times, serif !important;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+body {
+  margin: 0; padding: 0;
+  background: #020100;
+  display: flex; justify-content: center; align-items: center;
+  height: 100vh; overflow: hidden;
+}
+#game-wrapper {
+  position: relative;
+  width: 100vw; height: 100vh;
+  display: flex; justify-content: center; align-items: center;
+}
+canvas {
+  max-width: 100%; max-height: 100%;
+  aspect-ratio: 1280 / 760;
+  display: block;
+  box-shadow: 0 0 120px rgba(0,0,0,1);
+  cursor: grab;
+}
+canvas:active { cursor: grabbing; }
+
+/* ── Start Screen ── */
+#start-screen {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, #100a04 0%, #020100 100%);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  z-index: 20;
+}
+.brass-frame {
+  background: radial-gradient(ellipse at top, #1e1408 0%, #0c0805 100%);
+  border: 5px solid #b5a030;
+  border-radius: 14px;
+  padding: 44px 58px 40px;
+  max-width: 800px; width: 92%;
+  text-align: center;
+  box-shadow:
+    inset 0 0 80px rgba(0,0,0,0.8),
+    0 0 60px rgba(181,160,48,0.2),
+    0 30px 90px rgba(0,0,0,0.9),
+    0 0 0 2px rgba(180,150,40,0.1);
+  position: relative; overflow: hidden;
+}
+.brass-frame::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 12px,
+    rgba(0,0,0,0.1) 12px, rgba(0,0,0,0.1) 13px
+  );
+  pointer-events: none;
+}
+.brass-frame::after {
+  content: '⚙';
+  position: absolute; top: 12px; right: 18px;
+  font-size: 28px; color: rgba(181,160,48,0.25);
+  animation: spin 8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.chapter-tag {
+  font-size: 12px; letter-spacing: 4px; text-transform: uppercase;
+  color: #8b6a20; margin-bottom: 10px;
+}
+.frame-title {
+  font-size: 48px; font-weight: bold;
+  color: #d4a820;
+  text-shadow: 0 0 30px rgba(212,168,32,0.6), 2px 2px 6px #000;
+  letter-spacing: 4px; margin: 0 0 4px;
+}
+.frame-sub {
+  color: #6a4e18; font-size: 15px; letter-spacing: 2px; margin-bottom: 20px;
+}
+.brass-div {
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, #b5a030, transparent);
+  margin: 16px 0;
+}
+.frame-desc {
+  color: #c8a870; font-size: 21px; line-height: 1.7;
+}
+.frame-desc b { color: #e0c060; }
+.frame-desc .badge {
+  display: inline-block;
+  background: rgba(181,160,48,0.15);
+  border: 1px solid #5a4010;
+  border-radius: 4px; padding: 2px 10px;
+  margin: 2px 4px; font-size: 18px;
+}
+.activate-btn {
+  margin-top: 28px; padding: 16px 60px;
+  font-size: 24px; font-weight: bold;
+  background: linear-gradient(180deg, #c8a030 0%, #7a5808 100%);
+  color: #f8e8b0;
+  border: 3px solid #f0d070;
+  border-radius: 8px; cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.7),
+              inset 0 1px 0 rgba(255,240,150,0.3),
+              0 0 40px rgba(181,160,48,0.1);
+  letter-spacing: 2px; text-transform: uppercase;
+  position: relative; z-index: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.activate-btn:hover {
+  transform: translateY(-4px);
+  background: linear-gradient(180deg, #e8c040 0%, #9a7010 100%);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.7), 0 0 50px rgba(220,180,50,0.4);
+}
+.activate-btn:active { transform: translateY(0); }
+
+/* ── Quiz Overlay (DOM, vẽ đè lên canvas) ── */
+#quiz-overlay {
+  position: absolute; inset: 0;
+  display: none; justify-content: center; align-items: center;
+  z-index: 15;
+  background: rgba(0,0,0,0);
+  pointer-events: none;
+}
+#quiz-overlay.active { display: flex; pointer-events: all; }
+.quiz-scroll {
+  background: linear-gradient(160deg, #1a1208 0%, #0e0b05 100%);
+  border: 4px solid #b5a030;
+  border-radius: 14px;
+  padding: 38px 48px;
+  max-width: 760px; width: 88%;
+  box-shadow: 0 0 100px rgba(181,160,48,0.3), inset 0 0 60px rgba(0,0,0,0.7);
+  position: relative; overflow: hidden;
+  animation: quizSlide 0.55s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes quizSlide {
+  from { transform: scale(0.88) translateY(30px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.quiz-scroll::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(181,160,48,0.08), transparent 65%);
+  pointer-events: none;
+}
+.quiz-civ-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #2a1e08, #180e04);
+  border: 2px solid #b5a030;
+  border-radius: 20px; padding: 4px 18px;
+  font-size: 13px; color: #d4a820; letter-spacing: 3px;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+.quiz-needle {
+  font-size: 32px; color: #b5a030;
+  text-shadow: 0 0 20px rgba(181,160,48,0.6);
+  margin-bottom: 8px;
+}
+.quiz-q-text {
+  color: #f0e0b0; font-size: 25px; font-weight: bold;
+  line-height: 1.55; text-align: center; margin-bottom: 26px;
+}
+.quiz-opts {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.quiz-opt {
+  background: linear-gradient(160deg, #221a08, #120e04);
+  border: 2px solid #5a4010;
+  border-radius: 10px; padding: 13px 16px;
+  color: #d4b870; font-size: 19px;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+}
+.quiz-opt:hover {
+  border-color: #d4a820; color: #f8e890;
+  background: linear-gradient(160deg, #382808, #1e1204);
+  box-shadow: 0 0 24px rgba(181,160,48,0.25);
+  transform: translateY(-2px);
+}
+.opt-badge {
+  width: 30px; height: 30px; flex-shrink: 0;
+  background: #7a5010; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 15px; color: #f0d070;
+}
+.quiz-opt.correct {
+  border-color: #40d060; background: linear-gradient(160deg, #0a2810, #061408);
+  color: #80ff90;
+  animation: punchIn 0.35s;
+}
+.quiz-opt.wrong {
+  border-color: #d04020; background: linear-gradient(160deg, #280c06, #140604);
+  color: #ff8060;
+  animation: shakeWrong 0.4s;
+}
+@keyframes punchIn  { 0%{transform:scale(0.92)}60%{transform:scale(1.04)}100%{transform:none} }
+@keyframes shakeWrong { 0%,100%{transform:none} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+.quiz-footer {
+  text-align: center; color: #6a5020; font-size: 15px;
+  margin-top: 18px; font-style: italic;
+}
+
+/* ── Win Screen ── */
+#win-overlay {
+  position: absolute; inset: 0;
+  display: none; justify-content: center; align-items: center;
+  z-index: 18;
+  pointer-events: none;
+}
+#win-overlay.active { display: flex; pointer-events: all; }
+.win-panel {
+  text-align: center; padding: 50px 70px;
+  animation: winBoom 0.7s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes winBoom { from{transform:scale(0.4);opacity:0} to{transform:none;opacity:1} }
+.win-h { font-size: 66px; font-weight: bold;
+  color: #f0c820;
+  text-shadow: 0 0 50px rgba(240,200,32,0.9), 0 0 100px rgba(240,160,0,0.5);
+  animation: winGlow 2s infinite;
+}
+@keyframes winGlow {
+  0%,100%{ text-shadow:0 0 50px rgba(240,200,32,0.9),0 0 100px rgba(240,160,0,0.5); }
+  50%{ text-shadow:0 0 80px rgba(255,230,60,1),0 0 160px rgba(255,180,0,0.7); }
+}
+.win-sub  { color: #f0d880; font-size: 28px; margin: 12px 0 0; }
+.win-note { color: #b09050; font-size: 18px; margin-top: 10px; line-height: 1.6; }
+.win-replay {
+  margin-top: 26px; padding: 14px 50px;
+  font-size: 22px; font-weight: bold;
+  background: linear-gradient(180deg, #c8a030 0%, #7a5010 100%);
+  color: #f8e8a0; border: 3px solid #f0d060;
+  border-radius: 8px; cursor: pointer; transition: all 0.3s;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+  letter-spacing: 2px;
+}
+.win-replay:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(181,160,48,0.4); }
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <div class="brass-frame">
+      <div class="chapter-tag">✦ Lịch Sử Lớp 6 · Chương 3 ✦</div>
+      <h1 class="frame-title">La Bàn Học Giả</h1>
+      <div class="frame-sub">Xã hội cổ đại – Bản đồ văn minh nhân loại</div>
+      <div class="brass-div"></div>
+      <p class="frame-desc">
+        Sáu nền văn minh vĩ đại đang chờ được khám phá.<br>
+        <b>Nhiệm vụ:</b> Kéo từng thẻ thành tựu vào đúng<br>
+        <span class="badge">⚙ La Bàn</span> của nền văn minh tương ứng.<br>
+        Hoàn thành để mở khoá <b>Thử thách Giải mã!</b>
+      </p>
+      <div class="brass-div"></div>
+      <button class="activate-btn" id="btn-start">⚙ KÍCH HOẠT LA BÀN</button>
+    </div>
+  </div>
+
+  <!-- Quiz Overlay -->
+  <div id="quiz-overlay">
+    <div class="quiz-scroll">
+      <div style="text-align:center">
+        <div class="quiz-needle">⊕</div>
+        <div class="quiz-civ-badge" id="quiz-civ-label">Ai Cập</div>
+      </div>
+      <div class="quiz-q-text" id="quiz-q"></div>
+      <div class="quiz-opts" id="quiz-opts"></div>
+      <div class="quiz-footer" id="quiz-footer">Xoay kim la bàn và chọn đáp án đúng...</div>
+    </div>
+  </div>
+
+  <!-- Win Overlay -->
+  <div id="win-overlay">
+    <div class="win-panel">
+      <div class="win-h">⚙ HOÀN THÀNH! ⚙</div>
+      <div class="win-sub">LA BÀN ĐÃ ĐƯỢC HIỆU CHỈNH HOÀN HẢO!</div>
+      <div class="win-note">
+        Toàn bộ kiến thức Chương 3 đã được giải mã.<br>
+        <b style="color:#f0c820">Nhà học giả thực thụ!</b>
+      </div>
+      <button class="win-replay" id="btn-replay">↺ Chơi lại</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CANVAS SETUP
+// ═══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const CW = 1280, CH = 760;
+let DPR = 1;
+
+function setupCanvas() {
+  DPR = window.devicePixelRatio || 1;
+  canvas.width  = CW * DPR;
+  canvas.height = CH * DPR;
+  ctx.scale(DPR, DPR);
+}
+setupCanvas();
+window.addEventListener('resize', setupCanvas);
+
+// Compass center
+const CCX = CW / 2, CCY = CH / 2 - 30;
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════════
+const lerp   = (a, b, t) => a + (b - a) * t;
+const clamp  = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const rand   = (a, b) => a + Math.random() * (b - a);
+const τ = Math.PI * 2;
+
+function drawRR(c, x, y, w, h, r) {
+  r = Math.min(r, w/2, h/2);
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.lineTo(x+w-r, y); c.quadraticCurveTo(x+w, y, x+w, y+r);
+  c.lineTo(x+w, y+h-r); c.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  c.lineTo(x+r, y+h); c.quadraticCurveTo(x, y+h, x, y+h-r);
+  c.lineTo(x, y+r); c.quadraticCurveTo(x, y, x+r, y);
+  c.closePath();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ═══════════════════════════════════════════════════════════════
+let AC = null;
+function initAudio() {
+  if (AC) return;
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+}
+function tone(freq, type, dur, vol = 0.1, delay = 0) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain();
+  const t = AC.currentTime + delay;
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(AC.destination);
+  o.start(t); o.stop(t + dur);
+}
+
+const SFX = {
+  paper()   { tone(340, 'square', 0.07, 0.06); tone(280, 'square', 0.05, 0.04, 0.04); },
+  bell()    { // Chuông đồng
+    tone(880, 'sine', 0.6, 0.18); tone(1320, 'sine', 0.4, 0.10, 0.05);
+    tone(1760, 'sine', 0.25, 0.06, 0.1);
+  },
+  gear()    { tone(120, 'sawtooth', 0.12, 0.08); tone(90, 'sawtooth', 0.1, 0.05, 0.06); },
+  error()   { tone(200, 'sawtooth', 0.18, 0.12); tone(170, 'sawtooth', 0.15, 0.1, 0.1); },
+  compass() { // Tiếng kim la bàn quay
+    for (let i = 0; i < 5; i++) tone(400 + i * 60, 'triangle', 0.1, 0.06, i * 0.08);
+  },
+  win()     {
+    [[523,0],[659,0.15],[784,0.3],[1047,0.48],[880,0.7],[1047,0.88]]
+      .forEach(([f,d]) => tone(f,'sine',0.5,0.16,d));
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════════
+const CIVS = [
+  { id:'aicap',    name:'Ai Cập',    angle: -Math.PI/2,            color:'#d4a820', accent:'#fff080' },
+  { id:'luongha',  name:'Lưỡng Hà',  angle: -Math.PI/2 + τ/6,     color:'#c06820', accent:'#ffa060' },
+  { id:'ando',     name:'Ấn Độ',     angle: -Math.PI/2 + τ*2/6,   color:'#a03080', accent:'#e080d0' },
+  { id:'trungquoc',name:'Trung Quốc',angle: -Math.PI/2 + τ*3/6,   color:'#c02020', accent:'#ff8080' },
+  { id:'hylap',    name:'Hy Lạp',    angle: -Math.PI/2 + τ*4/6,   color:'#2060c0', accent:'#80b0ff' },
+  { id:'lama',     name:'La Mã',     angle: -Math.PI/2 + τ*5/6,   color:'#608020', accent:'#b0e040' },
+];
+
+const ALL_CARDS = [
+  // Ai Cập (4)
+  { civ:'aicap',    text:'Sông Nin',              icon:'🌊' },
+  { civ:'aicap',    text:'Kim tự tháp',            icon:'🔺' },
+  { civ:'aicap',    text:'Chữ tượng hình',         icon:'𓂀'  },
+  { civ:'aicap',    text:'Tính diện tích\ntam giác',icon:'📐' },
+  // Lưỡng Hà (4)
+  { civ:'luongha',  text:'Sông Ti-gơ-rơ\n& Ơ-phơ-rát', icon:'🏞️' },
+  { civ:'luongha',  text:'Thành Ba-bi-lon',        icon:'🏛️' },
+  { civ:'luongha',  text:'Chữ hình nêm',           icon:'✏️' },
+  { civ:'luongha',  text:'Số đếm\ncơ số 60',       icon:'🔢' },
+  // Ấn Độ (4)
+  { civ:'ando',     text:'Sông Ấn\n& Sông Hằng',  icon:'💧' },
+  { civ:'ando',     text:'Chế độ đẳng cấp',        icon:'⚖️' },
+  { civ:'ando',     text:'Chữ Phạn',               icon:'ॐ'  },
+  { civ:'ando',     text:'Phát minh\nra số 0',     icon:'0️⃣' },
+  // Trung Quốc (4)
+  { civ:'trungquoc',text:'Hoàng Hà\n& Trường Giang',icon:'🌊'},
+  { civ:'trungquoc',text:'Vạn Lý\nTrường Thành',  icon:'🧱' },
+  { civ:'trungquoc',text:'Chữ Giáp cốt',           icon:'🦴' },
+  { civ:'trungquoc',text:'Tư tưởng\nNho giáo',     icon:'📚' },
+  // Hy Lạp (4)
+  { civ:'hylap',    text:'Đền Pác-tê-nông',        icon:'🏛️' },
+  { civ:'hylap',    text:'Thế vận hội\nÔ-lim-pích',icon:'🏅' },
+  { civ:'hylap',    text:'Định lí Pi-ta-go',        icon:'📐' },
+  { civ:'hylap',    text:'Thành bang\nA-ten',       icon:'🗺️' },
+  // La Mã (4)
+  { civ:'lama',     text:'Đấu trường\nCô-lô-xê',   icon:'🏟️' },
+  { civ:'lama',     text:'Hệ thống\nchữ La-tinh',  icon:'🔤' },
+  { civ:'lama',     text:'Chữ số La Mã',            icon:'Ⅰ'  },
+  { civ:'lama',     text:'Luật\n12 bảng',           icon:'⚖️' },
+];
+
+const QUIZ_DATA = [
+  {
+    civ: 'aicap', civName: 'Ai Cập',
+    q: 'Người Ai Cập cổ đại đã dùng hệ thống chữ viết nào?',
+    opts: ['Chữ hình nêm','Chữ tượng hình','Chữ Phạn','Chữ Giáp cốt'], ans: 1
+  },
+  {
+    civ: 'luongha', civName: 'Lưỡng Hà',
+    q: 'Nền văn minh Lưỡng Hà phát triển bên lưu vực sông nào?',
+    opts: ['Sông Nin & Hằng','Hoàng Hà & Dương Tử','Ti-gơ-rơ & Ơ-phơ-rát','Sông Ấn & Hằng'], ans: 2
+  },
+  {
+    civ: 'ando', civName: 'Ấn Độ',
+    q: 'Phát minh quan trọng nhất về toán học của nền văn minh Ấn Độ cổ đại là gì?',
+    opts: ['Định lí Pi-ta-go','Hệ số đếm cơ số 60','Phát minh ra số 0','Tính diện tích tam giác'], ans: 2
+  },
+  {
+    civ: 'trungquoc', civName: 'Trung Quốc',
+    q: 'Công trình kiến trúc vĩ đại nhất của nền văn minh Trung Quốc cổ đại là gì?',
+    opts: ['Kim tự tháp','Vạn Lý Trường Thành','Đấu trường Cô-lô-xê','Đền Pác-tê-nông'], ans: 1
+  },
+  {
+    civ: 'hylap', civName: 'Hy Lạp',
+    q: 'Sự kiện thể thao nào có nguồn gốc từ nền văn minh Hy Lạp cổ đại?',
+    opts: ['World Cup','Thế vận hội Ô-lim-pích','Giải đấu La Mã','Hội thao châu Á'], ans: 1
+  },
+  {
+    civ: 'lama', civName: 'La Mã',
+    q: 'Hệ thống pháp luật quan trọng nào được ra đời ở La Mã cổ đại?',
+    opts: ['Bộ luật Ha-mu-ra-bi','Luật 12 bảng','Bộ luật Manu','Luật Hoa Hạ'], ans: 1
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════════════════
+let state       = 'START';   // START | PLAYING | SPINQUIZ | QUIZ | WIN
+let time        = 0;
+let particles   = [];
+let nodes       = [];
+let deck        = [];
+let activeCard  = null;
+let isDragging  = false;
+let dragOX = 0, dragOY = 0;
+let cardsPlaced = 0;
+let totalCards  = ALL_CARDS.length;   // 24
+
+// Compass needle spin state
+let needleAngle   = 0;
+let needleTarget  = 0;
+let needleSpinning = false;
+let needleSpinTimer = 0;
+let selectedQuiz   = null;
+let beamCivId      = null;
+let beamTimer      = 0;
+
+// Gear angles
+const gears = [
+  { x: CCX - 160, y: CCY - 110, r: 190, teeth: 22, speed:  0.006, a: 0, fill:'#0e0b06', stroke:'#2a1e0a' },
+  { x: CCX + 220, y: CCY + 120, r: 230, teeth: 26, speed: -0.004, a: 1, fill:'#080705', stroke:'#1e1508' },
+  { x: CCX - 280, y: CCY + 180, r: 120, teeth: 14, speed:  0.009, a: 2, fill:'#0c0a06', stroke:'#221808' },
+  { x: CCX + 320, y: CCY - 140, r: 100, teeth: 12, speed: -0.011, a: 0.5, fill:'#0a0806', stroke:'#1c1408'},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  PARTICLE
+// ═══════════════════════════════════════════════════════════════
+class Particle {
+  constructor(x, y, kind, col) {
+    this.x = x; this.y = y; this.kind = kind;
+    switch (kind) {
+      case 'dust':
+        this.vx = rand(-0.4, 0.4); this.vy = rand(-0.5, -0.1);
+        this.size = rand(1, 2.5); this.life = rand(0.3, 0.8); this.decay = 0.003;
+        this.col = col || 'rgba(200,180,120,'; break;
+      case 'spark':
+        const a = rand(0, τ), sp = rand(2, 9);
+        this.vx = Math.cos(a)*sp; this.vy = Math.sin(a)*sp;
+        this.size = rand(1.5, 4); this.life = 1; this.decay = rand(0.025, 0.055);
+        this.col = col || 'rgba(240,200,50,'; break;
+      case 'trail':
+        this.vx = rand(-0.3, 0.3); this.vy = rand(-0.5, 0.1);
+        this.size = rand(2, 5); this.life = 0.7; this.decay = 0.04;
+        this.col = col || 'rgba(200,170,50,'; break;
+      case 'beam':
+        this.vx = rand(-0.8, 0.8); this.vy = rand(-0.8, 0.8);
+        this.size = rand(2, 5); this.life = 1; this.decay = 0.018;
+        this.col = col || 'rgba(255,220,80,'; break;
+      case 'confetti':
+        const a2 = rand(0,τ), sp2 = rand(3,8);
+        this.vx = Math.cos(a2)*sp2; this.vy = Math.sin(a2)*sp2 - 4;
+        this.size = rand(4, 8); this.life = 1; this.decay = 0.012;
+        this.rot = rand(0,τ); this.rotV = rand(-0.2,0.2);
+        const cols = ['rgba(240,200,50,','rgba(200,100,30,','rgba(255,180,0,','rgba(180,220,80,'];
+        this.col = cols[Math.floor(Math.random()*cols.length)]; break;
+    }
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy; this.life -= this.decay;
+    if (this.kind==='spark' || this.kind==='confetti') this.vy += 0.2;
+    if (this.kind==='confetti') { this.vx *= 0.97; this.rot += this.rotV; }
+  }
+  draw() {
+    if (this.life <= 0) return;
+    const a = Math.max(0, this.life);
+    ctx.save();
+    ctx.globalAlpha = a;
+    if (this.kind === 'confetti') {
+      ctx.translate(this.x, this.y); ctx.rotate(this.rot);
+      ctx.fillStyle = this.col + '1)';
+      ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size*0.55);
+    } else {
+      ctx.shadowColor = this.col + '1)'; ctx.shadowBlur = this.kind==='dust' ? 0 : 8;
+      ctx.fillStyle = this.col + a + ')';
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, τ); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function burst(x, y, kind, n, col) {
+  for (let i=0; i<n; i++) particles.push(new Particle(x, y, kind, col));
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NODE CLASS
+// ═══════════════════════════════════════════════════════════════
+const NODE_RADIUS = 250;
+
+class Node {
+  constructor(data) {
+    this.id    = data.id;
+    this.name  = data.name;
+    this.angle = data.angle;
+    this.color = data.color;
+    this.accent= data.accent;
+    this.x = CCX + Math.cos(data.angle) * NODE_RADIUS;
+    this.y = CCY + Math.sin(data.angle) * NODE_RADIUS;
+    this.r = 52;
+    this.placed   = 0;
+    this.maxCards = 4;
+    this.glow     = 0;
+    this.pulse    = rand(0, τ);
+    this.isTarget = false; // lit during quiz spin
+  }
+
+  get done() { return this.placed >= this.maxCards; }
+
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    this.pulse += 0.04;
+
+    // Outer glow
+    this.glow = this.done
+      ? lerp(this.glow, 1, 0.06)
+      : lerp(this.glow, this.isTarget ? 0.7 : 0, 0.08);
+
+    if (this.glow > 0.01) {
+      ctx.shadowColor = this.color; ctx.shadowBlur = 40 * this.glow;
+      const bg = ctx.createRadialGradient(0,0,this.r, 0,0, this.r+40);
+      bg.addColorStop(0, this.color.replace(')', `,${0.35*this.glow})`).replace('#', 'rgba('));
+      // quick hex→rgba shortcut via shadow
+      ctx.globalAlpha = this.glow * 0.45 * (0.8 + 0.2*Math.sin(this.pulse));
+      ctx.fillStyle = this.color;
+      ctx.beginPath(); ctx.arc(0, 0, this.r + 22, 0, τ); ctx.fill();
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    }
+
+    // Body
+    const bodyG = ctx.createRadialGradient(0, -this.r*0.3, 4, 0, 0, this.r);
+    bodyG.addColorStop(0, this.done ? '#2a2008' : '#1a1208');
+    bodyG.addColorStop(1, '#080604');
+    ctx.fillStyle = bodyG; ctx.shadowColor='rgba(0,0,0,0.9)'; ctx.shadowBlur=18;
+    ctx.beginPath(); ctx.arc(0, 0, this.r, 0, τ); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Decorative rings
+    [this.r, this.r-7, this.r-14].forEach((r, i) => {
+      ctx.strokeStyle = this.done
+        ? `rgba(240,200,50,${0.7 - i*0.2})`
+        : `rgba(90,65,20,${0.7 - i*0.15})`;
+      ctx.lineWidth = i === 0 ? 3 : 1;
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, τ); ctx.stroke();
+    });
+
+    // Progress arc
+    if (this.placed > 0) {
+      const sweepAngle = (this.placed / this.maxCards) * τ;
+      ctx.strokeStyle = this.done ? this.accent : this.color;
+      ctx.lineWidth = 5; ctx.lineCap = 'round';
+      ctx.shadowColor = this.done ? this.accent : this.color; ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(0, 0, this.r - 4, -Math.PI/2, -Math.PI/2 + sweepAngle);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // Center symbol / progress dots
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const nameLines = this.name.split(' ');
+    const fontSize = nameLines.length > 1 ? 15 : 17;
+    ctx.font = `bold ${fontSize}px "Times New Roman"`;
+    ctx.fillStyle = this.done ? this.accent : '#d4b870';
+    if (nameLines.length === 1) {
+      ctx.fillText(this.name, 0, 0);
+    } else {
+      nameLines.forEach((ln, i) => {
+        ctx.fillText(ln, 0, (i - (nameLines.length-1)/2) * (fontSize+3));
+      });
+    }
+
+    // Badge: placed count
+    ctx.font = `bold 12px "Times New Roman"`;
+    ctx.fillStyle = this.done ? this.accent : '#a08040';
+    ctx.fillText(`${this.placed}/${this.maxCards}`, 0, this.r - 22);
+
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CARD CLASS
+// ═══════════════════════════════════════════════════════════════
+const DECK_X = CCX, DECK_Y = CH - 75;
+
+class Card {
+  constructor(data) {
+    this.civ   = data.civ;
+    this.text  = data.text;
+    this.icon  = data.icon;
+    this.w = 148; this.h = 108;
+    this.x = DECK_X; this.y = DECK_Y;
+    this.targetX = DECK_X; this.targetY = DECK_Y;
+    this.angle = 0; this.targetAngle = rand(-0.08, 0.08);
+    this.scale = 1; this.targetScale = 1;
+    this.alpha = 1;
+    this.shakeX = 0; this.shakeTimer = 0;
+    // Color from civ
+    const civ = CIVS.find(c => c.id === data.civ);
+    this.color  = civ ? civ.color : '#b5a030';
+    this.accent = civ ? civ.accent : '#f0d060';
+    this.colorVar = rand(-8, 8);
+  }
+
+  update() {
+    const sp = 0.16;
+    this.x = lerp(this.x, this.targetX + this.shakeX, sp);
+    this.y = lerp(this.y, this.targetY, sp);
+    this.angle = lerp(this.angle, this.targetAngle, sp);
+    this.scale = lerp(this.scale, this.targetScale, sp);
+    if (this.shakeTimer > 0) {
+      this.shakeX = Math.sin(this.shakeTimer * 1.8) * 8 * (this.shakeTimer / 20);
+      this.shakeTimer--;
+    } else this.shakeX = 0;
+  }
+
+  draw(lifted) {
+    if (this.alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+    ctx.scale(this.scale, this.scale);
+
+    const w = this.w, h = this.h;
+    const shadow = lifted ? 28 : 8;
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = shadow; ctx.shadowOffsetY = lifted ? 14 : 4;
+
+    // Parchment body
+    const r = 175 + this.colorVar, g2 = 152 + this.colorVar*0.5, b = 95;
+    ctx.fillStyle = `rgb(${r},${g2},${b})`;
+    drawRR(ctx, -w/2, -h/2, w, h, 8); ctx.fill();
+
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+    // Top color band (civ color accent)
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.alpha * 0.6;
+    ctx.fillRect(-w/2, -h/2, w, 8);
+    ctx.globalAlpha = this.alpha;
+
+    // Border
+    ctx.strokeStyle = this.color; ctx.lineWidth = 2;
+    drawRR(ctx, -w/2, -h/2, w, h, 8); ctx.stroke();
+    ctx.strokeStyle = 'rgba(180,140,60,0.3)'; ctx.lineWidth = 1;
+    drawRR(ctx, -w/2+6, -h/2+11, w-12, h-16, 5); ctx.stroke();
+
+    // Icon
+    ctx.font = '22px serif'; ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    try { ctx.fillText(this.icon, -w/2 + 22, -h/2 + 26); } catch(e) {}
+
+    // Text (multiline)
+    ctx.fillStyle = '#1a0e06';
+    ctx.font = `bold 16px "Times New Roman"`;
+    const lines = this.text.split('\n');
+    const totalH = lines.length * 20;
+    lines.forEach((ln, i) => {
+      const ty = -totalH/2 + i*20 + 12;
+      ctx.fillText(ln, 8, ty);
+    });
+
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GEAR DRAWING
+// ═══════════════════════════════════════════════════════════════
+function drawGear(c, gx, gy, r, teeth, angle, fill, stroke) {
+  const toothH = r * 0.18, innerR = r * 0.78;
+  c.save(); c.translate(gx, gy); c.rotate(angle);
+  c.beginPath();
+  for (let i = 0; i < teeth; i++) {
+    const a1 = (i / teeth) * τ;
+    const a2 = a1 + (0.35 / teeth) * τ;
+    const a3 = a1 + (0.65 / teeth) * τ;
+    const a4 = a1 + τ / teeth;
+    c.lineTo(Math.cos(a1)*r, Math.sin(a1)*r);
+    c.lineTo(Math.cos(a1)*(r+toothH), Math.sin(a1)*(r+toothH));
+    c.lineTo(Math.cos(a2)*(r+toothH), Math.sin(a2)*(r+toothH));
+    c.lineTo(Math.cos(a3)*(r+toothH), Math.sin(a3)*(r+toothH));
+    c.lineTo(Math.cos(a4)*r, Math.sin(a4)*r);
+  }
+  c.closePath();
+  c.fillStyle = fill; c.strokeStyle = stroke; c.lineWidth = 1.5;
+  c.fill(); c.stroke();
+
+  // Inner hole
+  c.beginPath(); c.arc(0, 0, innerR * 0.35, 0, τ);
+  c.fillStyle = '#020100'; c.fill();
+  c.strokeStyle = stroke; c.lineWidth = 1; c.stroke();
+
+  // Spokes
+  c.strokeStyle = stroke; c.lineWidth = 2;
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * τ;
+    c.beginPath();
+    c.moveTo(Math.cos(a) * innerR * 0.38, Math.sin(a) * innerR * 0.38);
+    c.lineTo(Math.cos(a) * innerR * 0.82, Math.sin(a) * innerR * 0.82);
+    c.stroke();
+  }
+  c.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  COMPASS / ASTROLABE DRAWING
+// ═══════════════════════════════════════════════════════════════
+function drawCompass() {
+  ctx.save();
+  ctx.translate(CCX, CCY);
+
+  // Outer decorative rings
+  const ringData = [
+    { r: 295, lw: 6, col: '#3a2808', shadow: 20 },
+    { r: 285, lw: 2, col: '#6a5010' },
+    { r: 280, lw: 1, col: '#4a3808' },
+  ];
+  ringData.forEach(rd => {
+    if (rd.shadow) { ctx.shadowColor = '#b5a030'; ctx.shadowBlur = rd.shadow; }
+    ctx.strokeStyle = rd.col; ctx.lineWidth = rd.lw;
+    ctx.beginPath(); ctx.arc(0, 0, rd.r, 0, τ); ctx.stroke();
+    ctx.shadowBlur = 0;
+  });
+
+  // Degree tick marks
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * τ;
+    const inner = i % 9 === 0 ? 265 : i % 3 === 0 ? 268 : 270;
+    ctx.strokeStyle = i % 9 === 0 ? '#8a7030' : '#3a2808';
+    ctx.lineWidth = i % 9 === 0 ? 2 : 1;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a)*inner, Math.sin(a)*inner);
+    ctx.lineTo(Math.cos(a)*278, Math.sin(a)*278);
+    ctx.stroke();
+  }
+
+  // Cardinal directions (tiny)
+  const cardinals = [['N', -Math.PI/2], ['S', Math.PI/2], ['E', 0], ['W', Math.PI]];
+  ctx.font = 'bold 13px "Times New Roman"';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#8a7030';
+  cardinals.forEach(([lbl, a]) => {
+    ctx.fillText(lbl, Math.cos(a)*255, Math.sin(a)*255);
+  });
+
+  // Decorative inner circle fill
+  const bg = ctx.createRadialGradient(0, 0, 0, 0, 0, 260);
+  bg.addColorStop(0, 'rgba(20,14,6,0.95)');
+  bg.addColorStop(0.5, 'rgba(14,10,4,0.98)');
+  bg.addColorStop(1, 'rgba(8,6,2,1)');
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.arc(0, 0, 260, 0, τ); ctx.fill();
+
+  // Decorative rings inside
+  [220, 190, 80, 50].forEach((r, i) => {
+    ctx.strokeStyle = `rgba(60,45,15,${0.6 - i*0.1})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, τ); ctx.stroke();
+  });
+
+  // Connection lines to nodes (dim when unlit, bright when done)
+  CIVS.forEach(civ => {
+    const node = nodes.find(n => n.id === civ.id);
+    if (!node) return;
+    const done = node ? node.done : false;
+    const isBeam = (beamCivId === civ.id && beamTimer > 0);
+    const nx = Math.cos(civ.angle) * NODE_RADIUS;
+    const ny = Math.sin(civ.angle) * NODE_RADIUS;
+    const bx = Math.cos(civ.angle) * 230;
+    const by = Math.sin(civ.angle) * 230;
+
+    const lineG = ctx.createLinearGradient(0, 0, nx, ny);
+    if (isBeam) {
+      lineG.addColorStop(0, `rgba(255,230,80,${0.6 + 0.4*Math.sin(time*0.2)})`);
+      lineG.addColorStop(1, civ.color + '80');
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#f0c820'; ctx.shadowBlur = 12;
+    } else if (done) {
+      lineG.addColorStop(0, civ.color + 'aa');
+      lineG.addColorStop(1, civ.color + '44');
+      ctx.lineWidth = 2; ctx.shadowBlur = 0;
+    } else {
+      lineG.addColorStop(0, '#2a1e08'); lineG.addColorStop(1, '#1a1006');
+      ctx.lineWidth = 1; ctx.shadowBlur = 0;
+    }
+    ctx.strokeStyle = lineG;
+    ctx.setLineDash(done || isBeam ? [] : [6, 4]);
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(nx, ny); ctx.stroke();
+    ctx.setLineDash([]); ctx.shadowBlur = 0;
+  });
+
+  // Center hub
+  const hubG = ctx.createRadialGradient(0, -12, 4, 0, 0, 50);
+  hubG.addColorStop(0, '#4a3818'); hubG.addColorStop(0.6, '#2a1e0a'); hubG.addColorStop(1, '#100c04');
+  ctx.fillStyle = hubG; ctx.shadowColor='rgba(0,0,0,0.8)'; ctx.shadowBlur=20;
+  ctx.beginPath(); ctx.arc(0, 0, 50, 0, τ); ctx.fill(); ctx.shadowBlur=0;
+  ctx.strokeStyle='#8a7030'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,50,0,τ); ctx.stroke();
+  ctx.strokeStyle='#4a3818'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(0,0,44,0,τ); ctx.stroke();
+
+  // Compass Rose (decorative)
+  ctx.strokeStyle='rgba(120,95,35,0.4)'; ctx.lineWidth=1;
+  for (let i=0;i<8;i++) {
+    const a = (i/8)*τ;
+    ctx.beginPath(); ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(a)*45, Math.sin(a)*45); ctx.stroke();
+  }
+
+  // Animated needle
+  ctx.save();
+  ctx.rotate(needleAngle);
+  // North (red)
+  ctx.fillStyle = '#d04020'; ctx.shadowColor='#d04020'; ctx.shadowBlur=6;
+  ctx.beginPath(); ctx.moveTo(0,-44); ctx.lineTo(6,0); ctx.lineTo(0,10); ctx.lineTo(-6,0); ctx.closePath(); ctx.fill();
+  // South (brass)
+  ctx.fillStyle = '#b5a030'; ctx.shadowColor='#b5a030';
+  ctx.beginPath(); ctx.moveTo(0,44); ctx.lineTo(4,0); ctx.lineTo(0,-8); ctx.lineTo(-4,0); ctx.closePath(); ctx.fill();
+  ctx.shadowBlur=0;
+  // Center pin
+  ctx.fillStyle='#e0c060'; ctx.beginPath(); ctx.arc(0,0,6,0,τ); ctx.fill();
+  ctx.strokeStyle='#6a5020'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BACKGROUND
+// ═══════════════════════════════════════════════════════════════
+function drawBackground() {
+  // Dark base
+  ctx.fillStyle = '#050402'; ctx.fillRect(0,0,CW,CH);
+
+  // Nebula glow near compass
+  const neb = ctx.createRadialGradient(CCX, CCY, 50, CCX, CCY, 500);
+  neb.addColorStop(0, 'rgba(40,28,10,0.6)');
+  neb.addColorStop(0.5, 'rgba(20,14,5,0.3)');
+  neb.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = neb; ctx.fillRect(0,0,CW,CH);
+
+  // Grid (map-like)
+  ctx.globalAlpha = 0.04;
+  ctx.strokeStyle = '#b5a030'; ctx.lineWidth = 0.5;
+  for (let x=0; x<CW; x+=60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,CH); ctx.stroke(); }
+  for (let y=0; y<CH; y+=60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(CW,y); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+
+  // Corner ornaments
+  const corners = [[0,0],[CW,0],[0,CH],[CW,CH]];
+  corners.forEach(([cx2, cy2]) => {
+    ctx.save(); ctx.translate(cx2, cy2);
+    const sx = cx2===0 ? 1 : -1, sy = cy2===0 ? 1 : -1;
+    ctx.scale(sx, sy);
+    ctx.strokeStyle='rgba(90,70,20,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(30,8); ctx.lineTo(8,8); ctx.lineTo(8,30); ctx.stroke();
+    ctx.beginPath(); ctx.arc(8, 8, 18, 0, Math.PI/2); ctx.strokeStyle='rgba(90,70,20,0.25)'; ctx.stroke();
+    ctx.restore();
+  });
+
+  // Border frame
+  ctx.strokeStyle='rgba(90,70,20,0.4)'; ctx.lineWidth=2;
+  ctx.strokeRect(4, 4, CW-8, CH-8);
+  ctx.strokeStyle='rgba(60,45,12,0.3)'; ctx.lineWidth=1;
+  ctx.strokeRect(10, 10, CW-20, CH-20);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DECK DRAWING
+// ═══════════════════════════════════════════════════════════════
+function drawDeck(n) {
+  if (n <= 0) return;
+  const stackCount = Math.min(n, 4);
+  for (let i=stackCount-1; i>=0; i--) {
+    ctx.save();
+    ctx.translate(DECK_X, DECK_Y + i*2);
+    ctx.rotate(rand(-0.04, 0.04));
+    const w=148, h=108, x=-w/2, y=-h/2;
+    ctx.fillStyle=`rgb(${165+i*3},${145+i*2},${88+i})`;
+    ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=8+i*2; ctx.shadowOffsetY=i*2;
+    drawRR(ctx, x, y, w, h, 8); ctx.fill();
+    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    ctx.strokeStyle='rgba(140,110,40,0.6)'; ctx.lineWidth=1.5;
+    drawRR(ctx, x, y, w, h, 8); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Deck label
+  ctx.fillStyle='rgba(160,130,50,0.7)';
+  ctx.font='14px "Times New Roman"';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillText(`📜 ${n} thẻ còn lại`, DECK_X, DECK_Y + 62);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UI TEXT
+// ═══════════════════════════════════════════════════════════════
+function drawUI() {
+  // Title
+  ctx.save();
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.shadowColor='#b5a030'; ctx.shadowBlur=20;
+  ctx.fillStyle='#d4a820'; ctx.font='bold 30px "Times New Roman"';
+  ctx.fillText('LA BÀN HỌC GIẢ', CW/2, 14);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#6a5018'; ctx.font='14px "Times New Roman"';
+  ctx.fillText('Chương 3: Xã hội cổ đại  ✦  Đã phân loại: ' + cardsPlaced + ' / ' + totalCards, CW/2, 50);
+  ctx.restore();
+
+  // Progress bar
+  const bw=320, bh=10, bx=CW/2-bw/2, by=70;
+  ctx.fillStyle='#0e0b04'; drawRR(ctx, bx, by, bw, bh, 4); ctx.fill();
+  ctx.strokeStyle='#3a2a08'; ctx.lineWidth=1; drawRR(ctx, bx, by, bw, bh, 4); ctx.stroke();
+  if (cardsPlaced>0) {
+    const prog = cardsPlaced/totalCards;
+    const barG = ctx.createLinearGradient(bx,0,bx+bw*prog,0);
+    barG.addColorStop(0,'#8a6010'); barG.addColorStop(1,'#d4a820');
+    ctx.fillStyle=barG; drawRR(ctx, bx, by, bw*prog, bh, 4); ctx.fill();
+  }
+
+  // Spinning label during quiz spin
+  if (state==='SPINQUIZ') {
+    ctx.save();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=`rgba(212,168,32,${0.6+0.4*Math.sin(time*0.1)})`;
+    ctx.font='italic 20px "Times New Roman"';
+    ctx.shadowColor='#b5a030'; ctx.shadowBlur=12;
+    ctx.fillText('⚙ Kim la bàn đang chọn thử thách...', CW/2, CH-24);
+    ctx.restore();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SPIN QUIZ LOGIC
+// ═══════════════════════════════════════════════════════════════
+function startNeedleSpin() {
+  state = 'SPINQUIZ';
+  needleSpinTimer = 120 + Math.floor(Math.random()*80);
+  // Pick random quiz
+  selectedQuiz = QUIZ_DATA[Math.floor(Math.random() * QUIZ_DATA.length)];
+  needleTarget = CIVS.find(c => c.id === selectedQuiz.civ).angle + Math.PI/2 + Math.PI*6; // spin 3 full rotations then land
+  SFX.compass();
+}
+
+function updateNeedleSpin() {
+  if (state !== 'SPINQUIZ') return;
+  needleSpinTimer--;
+  const progress = 1 - needleSpinTimer / (120 + 80*0.5);
+  const easedProgress = 1 - Math.pow(1 - Math.min(1, progress*1.15), 4);
+  needleAngle = lerp(needleAngle, needleTarget, 0.03 + easedProgress * 0.04);
+  if (needleSpinTimer <= 0) {
+    needleAngle = needleTarget % τ;
+    // Light up the target node
+    beamCivId = selectedQuiz.civ;
+    beamTimer = 60;
+    nodes.forEach(n => n.isTarget = (n.id === selectedQuiz.civ));
+    SFX.bell();
+    burst(CCX, CCY, 'beam', 30, 'rgba(255,220,80,');
+    state = 'QUIZ';
+    setTimeout(showQuiz, 900);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  QUIZ DOM
+// ═══════════════════════════════════════════════════════════════
+let quizLocked = false;
+
+function showQuiz() {
+  if (!selectedQuiz) return;
+  document.getElementById('quiz-civ-label').textContent = '⚙ ' + selectedQuiz.civName + ' ⚙';
+  document.getElementById('quiz-q').textContent = selectedQuiz.q;
+  document.getElementById('quiz-footer').textContent = 'Xoay kim la bàn và chọn đáp án đúng...';
+  const container = document.getElementById('quiz-opts');
+  container.innerHTML = '';
+  const keys = ['A','B','C','D'];
+  selectedQuiz.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.innerHTML = `<span class="opt-badge">${keys[i]}</span> ${opt}`;
+    btn.onclick = () => handleQuizAnswer(i, btn, i===selectedQuiz.ans);
+    container.appendChild(btn);
+  });
+  document.getElementById('quiz-overlay').classList.add('active');
+  quizLocked = false;
+}
+
+function handleQuizAnswer(i, btn, correct) {
+  if (quizLocked) return;
+  quizLocked = true;
+  if (correct) {
+    btn.classList.add('correct');
+    document.getElementById('quiz-footer').textContent = '⚙ Chính xác! La bàn đã hiệu chỉnh hoàn hảo!';
+    SFX.win();
+    burst(CCX, CCY, 'confetti', 60);
+    burst(CCX, CCY, 'spark', 40, 'rgba(240,200,50,');
+    beamTimer = 999;
+    setTimeout(() => {
+      document.getElementById('quiz-overlay').classList.remove('active');
+      state = 'WIN';
+      setTimeout(() => document.getElementById('win-overlay').classList.add('active'), 1000);
+    }, 1200);
+  } else {
+    btn.classList.add('wrong');
+    document.getElementById('quiz-footer').textContent = '✗ Chưa đúng! Kim la bàn đặt lại...';
+    SFX.error();
+    burst(CCX, CCY, 'spark', 20, 'rgba(200,60,20,');
+    setTimeout(() => {
+      document.getElementById('quiz-overlay').classList.remove('active');
+      nodes.forEach(n => n.isTarget = false);
+      beamCivId = null; beamTimer = 0;
+      needleAngle = 0;
+      state = 'SPINQUIZ';
+      needleSpinTimer = 100 + Math.floor(Math.random()*60);
+      selectedQuiz = QUIZ_DATA[Math.floor(Math.random() * QUIZ_DATA.length)];
+      needleTarget = CIVS.find(c => c.id === selectedQuiz.civ).angle + Math.PI/2 + Math.PI*4;
+      SFX.compass();
+    }, 1800);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT GAME
+// ═══════════════════════════════════════════════════════════════
+function initGame() {
+  nodes = CIVS.map(d => new Node(d));
+  deck  = [...ALL_CARDS].sort(() => Math.random()-0.5).map(d => new Card(d));
+  activeCard = deck.pop();
+  cardsPlaced = 0;
+  particles = [];
+  needleAngle = 0; needleTarget = 0;
+  beamCivId = null; beamTimer = 0;
+  state = 'PLAYING';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INPUT
+// ═══════════════════════════════════════════════════════════════
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = CW / rect.width, sy = CH / rect.height;
+  const src = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
+  return { x: (src.clientX - rect.left)*sx, y: (src.clientY - rect.top)*sy };
+}
+
+function onDown(e) {
+  if (state !== 'PLAYING' || !activeCard) return;
+  const p = getPos(e);
+  const dx = p.x - activeCard.x, dy = p.y - activeCard.y;
+  if (Math.abs(dx) < activeCard.w/2+14 && Math.abs(dy) < activeCard.h/2+14) {
+    isDragging = true;
+    dragOX = dx; dragOY = dy;
+    activeCard.targetScale = 1.16;
+    activeCard.targetAngle = rand(-0.04, 0.04);
+    SFX.paper();
+  }
+}
+
+function onMove(e) {
+  e.preventDefault();
+  if (!isDragging || !activeCard) return;
+  const p = getPos(e);
+  activeCard.x = p.x - dragOX;
+  activeCard.y = p.y - dragOY;
+  activeCard.targetX = activeCard.x;
+  activeCard.targetY = activeCard.y;
+  // Spawn trail
+  if (Math.random() < 0.4) particles.push(new Particle(activeCard.x, activeCard.y, 'trail'));
+  // Hover highlight nodes
+  nodes.forEach(n => { n.isTarget = dist(activeCard.x, activeCard.y, n.x, n.y) < n.r + 55; });
+}
+
+function dist(x1,y1,x2,y2) { return Math.sqrt((x1-x2)**2+(y1-y2)**2); }
+
+function onUp(e) {
+  if (!isDragging || !activeCard) return;
+  isDragging = false;
+  const p = getPos(e);
+  nodes.forEach(n => n.isTarget = false);
+  activeCard.targetScale = 1; activeCard.targetAngle = rand(-0.06, 0.06);
+
+  // Find drop target
+  let dropNode = null;
+  for (const n of nodes) {
+    if (dist(activeCard.x, activeCard.y, n.x, n.y) < n.r + 52) { dropNode = n; break; }
+  }
+
+  if (dropNode) {
+    if (activeCard.civ === dropNode.id) {
+      // CORRECT
+      SFX.bell();
+      dropNode.placed++;
+      cardsPlaced++;
+      burst(dropNode.x, dropNode.y, 'spark', 28, 'rgba(240,200,50,');
+      burst(dropNode.x, dropNode.y, 'spark', 12, dropNode.color.replace('#','rgba(').replace(')',','));
+      // Beam effect
+      beamCivId = dropNode.id; beamTimer = 45;
+      if (dropNode.done) {
+        setTimeout(() => SFX.bell(), 300);
+        burst(dropNode.x, dropNode.y, 'confetti', 30);
+      }
+      // Next card
+      if (deck.length > 0) {
+        activeCard = deck.pop();
+        activeCard.x = DECK_X; activeCard.y = DECK_Y;
+        activeCard.targetX = DECK_X; activeCard.targetY = DECK_Y;
+      } else {
+        activeCard = null;
+        // All placed → spin quiz
+        setTimeout(() => { SFX.gear(); startNeedleSpin(); }, 1200);
+      }
+    } else {
+      // WRONG
+      SFX.error();
+      burst(activeCard.x, activeCard.y, 'spark', 16, 'rgba(200,60,20,');
+      activeCard.targetX = DECK_X; activeCard.targetY = DECK_Y;
+      activeCard.shakeTimer = 18;
+    }
+  } else {
+    // Drop in empty space
+    activeCard.targetX = DECK_X; activeCard.targetY = DECK_Y;
+  }
+}
+
+canvas.addEventListener('mousedown', onDown);
+canvas.addEventListener('mousemove', onMove);
+window.addEventListener('mouseup', onUp);
+canvas.addEventListener('touchstart', onDown, {passive:false});
+canvas.addEventListener('touchmove', onMove, {passive:false});
+window.addEventListener('touchend', e => { onUp(e); }, {passive:false});
+
+// ═══════════════════════════════════════════════════════════════
+//  GAME LOOP
+// ═══════════════════════════════════════════════════════════════
+function gameLoop() {
+  time += 0.05;
+
+  // Gear rotation
+  gears.forEach(g => g.a += g.speed);
+
+  // Beam timer
+  if (beamTimer > 0) beamTimer--;
+  if (state !== 'SPINQUIZ' && state !== 'QUIZ' && beamTimer === 0) beamCivId = null;
+
+  // Needle spin
+  updateNeedleSpin();
+  if (state === 'PLAYING') needleAngle += 0.004;
+
+  // Particles
+  if (particles.filter(p=>p.kind==='dust').length < 80 && Math.random()<0.15)
+    particles.push(new Particle(rand(50, CW-50), rand(50, CH-50), 'dust'));
+  for (let i=particles.length-1; i>=0; i--) {
+    particles[i].update();
+    if (particles[i].life<=0) particles.splice(i,1);
+  }
+
+  // Card update
+  if (activeCard) activeCard.update();
+
+  // ── DRAW ──
+  drawBackground();
+
+  // Gears (behind)
+  gears.forEach(g => drawGear(ctx, g.x, g.y, g.r, g.teeth, g.a, g.fill, g.stroke));
+
+  // Dust particles (behind compass)
+  particles.forEach(p => { if(p.kind==='dust') p.draw(); });
+
+  // Compass
+  drawCompass();
+
+  // Nodes
+  nodes.forEach(n => n.draw());
+
+  // Deck stack
+  if (state === 'PLAYING') drawDeck(deck.length);
+
+  // Foreground particles
+  particles.forEach(p => { if(p.kind!=='dust') p.draw(); });
+
+  // Card (always on top)
+  if (activeCard) activeCard.draw(isDragging);
+
+  // UI overlay
+  drawUI();
+
+  requestAnimationFrame(gameLoop);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BUTTONS
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('btn-start').addEventListener('click', () => {
+  initAudio();
+  initGame();
+  document.getElementById('start-screen').style.display = 'none';
+  SFX.gear();
+  requestAnimationFrame(gameLoop);
+});
+
+document.getElementById('btn-replay').addEventListener('click', () => {
+  document.getElementById('win-overlay').classList.remove('active');
+  document.getElementById('quiz-overlay').classList.remove('active');
+  initGame();
+});
+
+// Boot loop so canvas isn't blank
+(function boot() {
+  drawBackground();
+  requestAnimationFrame(boot);
+})();
+</script>
+</body>
+</html>
