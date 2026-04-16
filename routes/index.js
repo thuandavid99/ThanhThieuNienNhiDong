@@ -151,5 +151,10 @@ router.get('/lop6', (req, res) => {
     renderMindmap
   });
 });
-
+router.get('/luoc-su', (req, res) => {
+  res.render('luoc-su', {
+    pageTitle: 'Lược sử Việt Nam – Trạm Sử Meta',
+    brand: siteData.brand
+  });
+});
 module.exports = router;
