@@ -925,20 +925,9 @@ function markDone(id) {
 // Open chapter 5 by default (most important for lớp 6)
 toggleChapter(5);
 </script>
-<audio id="voiceIntro" src="/audio/khoahoc-voiceai.mp3" preload="auto"></audio>
-<div id="audioPrompt" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;background:#ff7a1a;color:#fff;padding:10px 24px;border-radius:99px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(255,122,26,0.4);">
-  🔊 Bấm để nghe lời chào
+<div id="audioPrompt" onclick="document.getElementById('v').play();this.style.display='none'" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:999999;background:#ff7a1a;color:#fff;padding:12px 28px;border-radius:99px;font-size:1rem;font-weight:700;cursor:pointer;">
+  🔊 Nghe lời chào
 </div>
-<script>
-  var prompt = document.getElementById('audioPrompt');
-  var audio = document.getElementById('voiceIntro');
-  prompt.addEventListener('click', function() {
-    audio.play();
-    prompt.style.display = 'none';
-  });
-  audio.addEventListener('ended', function() {
-    prompt.style.display = 'none';
-  });
-</script>
+<audio id="v" src="/audio/khoahoc-voiceai.mp3"></audio>
 </body>
 </html>
