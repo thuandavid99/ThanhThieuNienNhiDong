@@ -925,5 +925,16 @@ function markDone(id) {
 // Open chapter 5 by default (most important for lớp 6)
 toggleChapter(5);
 </script>
+<audio id="voiceIntro" src="/audio/khoahoc-voiceai.mp3"></audio>
+<script>
+  (function() {
+    var audio = document.getElementById('voiceIntro');
+    audio.play().catch(function() {
+      document.addEventListener('click', function() {
+        audio.play();
+      }, { once: true });
+    });
+  })();
+</script>
 </body>
 </html>
