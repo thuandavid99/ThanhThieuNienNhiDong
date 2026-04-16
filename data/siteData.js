@@ -34,12 +34,13 @@ module.exports = {
     { step: '', title: 'Luyện quiz', description: ' Củng cố bằng câu hỏi nhanh và mini game.' }
   ],
   timeline: [
+    { year: '40',   title: 'Hai Bà Trưng khởi nghĩa', description: 'Trưng Trắc và Trưng Nhị phất cờ khởi nghĩa, xưng vương ở Mê Linh.', icon: '⚡' },
     { year: '938',  title: 'Chiến thắng Bạch Đằng', description: 'Ngô Quyền đánh bại quân Nam Hán, mở ra thời kỳ độc lập lâu dài.', icon: '⚔️' },
     { year: '1010', title: 'Dời đô ra Thăng Long', description: 'Lý Công Uẩn mở đầu thời kỳ phát triển mới của quốc gia Đại Việt.', icon: '🏯' },
     { year: '1288', title: 'Bạch Đằng thời Trần', description: 'Nhà Trần đánh tan quân Nguyên Mông lần ba, giữ vững độc lập.', icon: '🛡️' },
     { year: '1428', title: 'Lê Lợi lên ngôi', description: 'Sau 10 năm kháng chiến, đuổi quân Minh, lập nhà Hậu Lê hưng thịnh.', icon: '👑' },
-    { year: '1789', title: 'Ngọc Hồi – Đống Đa', description: 'Quang Trung đại phá 29 vạn quân Thanh chỉ trong 5 ngày Tết Kỷ Dậu.', icon: '⚡' },
-    { year: '1945', title: 'Cách mạng tháng Tám', description: 'Nước VNDCCH ra đời, Bác Hồ đọc Tuyên ngôn Độc lập tại Ba Đình.', icon: '⭐' },
+    { year: '1789', title: 'Quang Trung đại phá quân Thanh', description: '5 ngày Tết Kỷ Dậu, đại phá 29 vạn quân Thanh tại Đống Đa.', icon: '⚡' },
+    { year: '1945', title: 'Cách mạng tháng Tám', description: 'Bác Hồ đọc Tuyên ngôn Độc lập 2/9, khai sinh nước VNDCCH.', icon: '⭐' },
     { year: '1954', title: 'Điện Biên Phủ', description: '56 ngày đêm chiến đấu anh dũng, đập tan cứ điểm bất khả xâm phạm.', icon: '🚩' },
     { year: '1975', title: 'Giải phóng miền Nam', description: 'Đất nước thống nhất sau Chiến dịch Hồ Chí Minh lịch sử.', icon: '🇻🇳' }
   ],
