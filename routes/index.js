@@ -154,7 +154,10 @@ router.get('/lop6', (req, res) => {
 router.get('/luoc-su', (req, res) => {
   res.render('luoc-su', {
     pageTitle: 'Lược sử Việt Nam – Trạm Sử Meta',
-    brand: siteData.brand
+    brand: siteData.brand,
+    resources: siteData.resources,
+    currentYear: new Date().getFullYear(),
+    dbEnabled: Boolean(process.env.MONGODB_URI)
   });
 });
 module.exports = router;
