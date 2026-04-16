@@ -134,7 +134,50 @@ NGUYÊN TẮC:
 • Lãnh thổ: vùng Nam Bộ Việt Nam và hạ lưu sông Mê Kông
 • Kinh tế: nông nghiệp lúa nước, thương mại quốc tế rất phát triển; cảng thị Óc Eo là minh chứng tiêu biểu
 • Văn hóa: chịu ảnh hưởng Ấn Độ, phát triển tôn giáo và nghệ thuật
-• Là một trong những quốc gia cổ sớm và hưng thịnh nhất Đông Nam Á`;
+• Là một trong những quốc gia cổ sớm và hưng thịnh nhất Đông Nam Á
+=== LƯỢC SỬ VIỆT NAM (TIMELINE TỔNG QUÁT) ===
+THỜI DỰNG NƯỚC (2879 TCN – 179 TCN):
+• 2879 TCN: Kinh Dương Vương lập nước Xích Quỷ
+• 2524 TCN: Lạc Long Quân kế vị, kết hôn Âu Cơ sinh 100 con
+• 2524–258 TCN: 18 đời Hùng Vương, nhà nước Văn Lang, kinh đô Phong Châu
+• 258 TCN: An Dương Vương lập nước Âu Lạc, xây thành Cổ Loa
+• 179 TCN: Triệu Đà thôn tính Âu Lạc → bắt đầu 1000 năm Bắc thuộc
+
+THỜI BẮC THUỘC (179 TCN – 938):
+• 40 SCN: Hai Bà Trưng khởi nghĩa, xưng vương ở Mê Linh
+• 43: Mã Viện đàn áp, Hai Bà Trưng tuẫn tiết
+• 248: Bà Triệu khởi nghĩa ở Thanh Hóa
+• 542: Lý Bí khởi nghĩa, lập nước Vạn Xuân (544)
+• 905: Khúc Thừa Dụ giành quyền tự chủ
+• 938: Ngô Quyền đại thắng Bạch Đằng → chấm dứt Bắc thuộc
+
+THỜI ĐỘC LẬP:
+• 968: Đinh Bộ Lĩnh lập Đại Cồ Việt, đóng đô Hoa Lư
+• 980: Lê Hoàn lập nhà Tiền Lê, đánh tan quân Tống (981)
+• 1009: Lý Công Uẩn lên ngôi, lập nhà Lý
+• 1010: Dời đô ra Thăng Long
+• 1054: Đổi tên nước thành Đại Việt
+• 1075–1077: Lý Thường Kiệt đánh Tống, bài thơ Nam quốc sơn hà
+• 1225: Nhà Trần thay nhà Lý
+• 1258, 1285, 1288: Ba lần đánh thắng quân Mông–Nguyên, Trần Hưng Đạo chỉ huy
+• 1400: Hồ Quý Ly lập nhà Hồ
+• 1407–1427: Nhà Minh đô hộ lần 2
+• 1418: Lê Lợi khởi nghĩa Lam Sơn
+• 1428: Lê Lợi lập nhà Hậu Lê, đuổi quân Minh
+• TK XVI–XVII: Trịnh–Nguyễn phân tranh, lấy sông Gianh làm ranh giới
+• 1771: Khởi nghĩa Tây Sơn (Nguyễn Nhạc, Nguyễn Huệ, Nguyễn Lữ)
+• 1785: Nguyễn Huệ đại phá quân Xiêm — trận Rạch Gầm–Xoài Mút
+• 1789: Quang Trung đại phá 29 vạn quân Thanh — trận Đống Đa
+• 1802: Nguyễn Ánh thống nhất, lập nhà Nguyễn, đặt tên nước Việt Nam, đóng đô Huế
+• 1858: Pháp tấn công Đà Nẵng
+• 1862–1884: Pháp chiếm toàn bộ Việt Nam
+• 1930: Nguyễn Ái Quốc thành lập Đảng Cộng sản Đông Dương
+• 1945: Cách mạng tháng Tám; 2/9 Bác Hồ đọc Tuyên ngôn Độc lập, lập nước VNDCCH
+• 1946–1954: Kháng chiến chống Pháp; 7/5/1954 chiến thắng Điện Biên Phủ
+• 1955–1975: Kháng chiến chống Mỹ; 30/4/1975 thống nhất đất nước
+• 1976: Đổi tên thành CHXHCN Việt Nam, Thủ đô Hà Nội
+• 1986: Đổi Mới, mở cửa kinh tế
+• Nay: Việt Nam phát triển, hội nhập quốc tế`;
 
 function callGroq(userMessage, customSystemPrompt) {
   return new Promise((resolve) => {
