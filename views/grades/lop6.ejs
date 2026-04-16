@@ -245,6 +245,9 @@ function toggleLesson(header) {
   }
 }
 </script>
-
+<div id="audioPrompt" onclick="document.getElementById('v').play();this.style.display='none'" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:999999;background:#ff7a1a;color:#fff;padding:12px 28px;border-radius:99px;font-size:1rem;font-weight:700;cursor:pointer;">
+  🔊 Nghe lời chào
+</div>
+<audio id="v" src="/audio/khoahoc-voiceai.mp3"></audio>
 </body>
 </html>
