@@ -376,7 +376,7 @@
             <a href="/luoc-su" class="text-link">Xem lược sử đầy đủ →</a>
           </div>
           <p class="timeline-hint reveal" style="transition-delay:.1s">👆 Click vào mỗi mốc để xem chi tiết</p>
-          <div class="timeline-row">
+          <div class="timeline-row" style="grid-template-columns: repeat(3, 1fr);">
             <% data.timeline.forEach((item, i) => { %>
               <article class="timeline-card reveal" style="transition-delay:<%=i*0.06%>s">
                 <div class="tl-icon"><%= item.icon %></div>
