@@ -478,10 +478,14 @@
         { img: 'hs14.jpg', quote: 'Quiz ôn bài rất hay!' },
         { img: 'hs15.jpg', quote: 'Giao diện rất đẹp!' },
         { img: 'hs16.jpg', quote: 'Em học được rất nhiều!' },
-        { img: 'hs17.jpg', quote: 'Dùng điện thoại cũng được!' }
+        { img: 'hs17.jpg', quote: 'Dùng điện thoại cũng được!' },
+        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Học sử thật thú vị!' },
+        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Em rất thích game lịch sử!' },
+        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Bài học sinh động lắm!' },
+        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' }
       ].forEach(item => { %>
         <div class="gallery-item">
-          <img src="/images/community/<%= item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
+          <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
           <div class="gallery-hover-quote">"<%= item.quote %>"</div>
         </div>
       <% }) %>
@@ -511,9 +515,13 @@
       { img: 'hs11.jpg', quote: 'Timeline dễ nhớ hơn!' },
       { img: 'hs10.jpg', quote: 'Chatbot giải đáp nhanh!' },
       { img: 'hs9.jpg', quote: 'Học sử không còn chán!' }
-      ].forEach(item => { %>
+      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Học sử thật thú vị!' },
+      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Em rất thích game lịch sử!' },
+      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Bài học sinh động lắm!' },
+      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' }
+     ].forEach(item => { %>
         <div class="gallery-item">
-          <img src="/images/community/<%= item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
+         <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
           <div class="gallery-hover-quote">"<%= item.quote %>"</div>
         </div>
       <% }) %>
