@@ -904,5 +904,9 @@ function toggleMusic() {
   }
 }
 </script>
+<script>
+  // Xóa dấu audio khi về trang chủ → vào bài học lại sẽ phát lại
+  sessionStorage.removeItem('welcomeAudioPlayed');
+</script>
   </body>
 </html>
