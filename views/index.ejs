@@ -459,35 +459,7 @@
   <!-- Băng chuyền ảnh hàng 1 - chạy phải -->
   <div class="gallery-track-wrap">
     <div class="gallery-track track-left">
-      <% [
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Học sử thật thú vị!' },
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Em rất thích game lịch sử!' },
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Bài học sinh động lắm!' },
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' },
-        { img: 'hs9.jpg', quote: 'Học sử không còn chán!' },
-        { img: 'hs10.jpg', quote: 'Chatbot giải đáp nhanh!' },
-        { img: 'hs11.jpg', quote: 'Timeline dễ nhớ hơn!' },
-        { img: 'hs12.jpg', quote: 'Em thích học sử hơn rồi!' },
-        { img: 'hs13.jpg', quote: 'Tài liệu phong phú!' },
-        { img: 'hs14.jpg', quote: 'Quiz ôn bài rất hay!' },
-        { img: 'hs15.jpg', quote: 'Giao diện rất đẹp!' },
-        { img: 'hs16.jpg', quote: 'Em học được rất nhiều!' },
-        { img: 'hs17.jpg', quote: 'Dùng điện thoại cũng được!' },
-        { img: 'hs18.jpg', quote: 'Bài học sinh động hơn!' },
-        { img: 'hs19.jpg', quote: 'Em hiểu bài nhanh hơn!' },
-        { img: 'hs20.jpg', quote: 'Website rất hay!' },
-        { img: 'hs21.jpg', quote: 'Học sử vui hơn rồi!' },
-        { img: 'hs22.jpg', quote: 'Em thích game lịch sử!' },
-        { img: 'hs23.jpg', quote: 'Mindmap giúp em nhớ bài!' },
-        { img: 'hs14.jpg', quote: 'Quiz ôn bài rất hay!' },
-        { img: 'hs15.jpg', quote: 'Giao diện rất đẹp!' },
-        { img: 'hs16.jpg', quote: 'Em học được rất nhiều!' },
-        { img: 'hs17.jpg', quote: 'Dùng điện thoại cũng được!' },
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Học sử thật thú vị!' },
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Em rất thích game lịch sử!' },
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Bài học sinh động lắm!' },
-        { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' }
-      ].forEach(item => { %>
+      
         <div class="gallery-item">
           <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
           <div class="gallery-hover-quote">"<%= item.quote %>"</div>
@@ -495,39 +467,55 @@
       <% }) %>
     </div>
   </div>
-
+   <% [
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257825/hs52_rcfhel.jpg', quote: 'Học sử thật thú vị!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257824/hs53_xyh2xz.jpg', quote: 'Chatbot giải đáp nhanh!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257824/hs48_mkhcxf.jpg', quote: 'Timeline dễ nhớ hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257824/hs51_yyc0e6.jpg', quote: 'Em thích học sử hơn rồi!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257823/hs47_b5aqu8.jpg', quote: 'Tài liệu phong phú!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257823/hs38_mwrnzf.jpg', quote: 'Quiz ôn bài rất hay!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257823/hs46_txe4ih.jpg', quote: 'Giao diện rất đẹp!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257823/hs45_hjo7oe.jpg', quote: 'Em học được rất nhiều!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257822/hs44_msnmoz.jpg', quote: 'Dùng điện thoại cũng được!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257822/hs42_lovsm9.jpg', quote: 'Bài học sinh động hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257822/hs43_rpmnzj.jpg', quote: 'Em hiểu bài nhanh hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257822/hs41_p8658z.jpg', quote: 'Website rất hay!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257821/hs40_vfxibm.jpg', quote: 'Học sử vui hơn rồi!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257821/hs33_tkqxhw.jpg', quote: 'Em thích game lịch sử!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257821/hs39_yhiltn.jpg', quote: 'Mindmap giúp em nhớ bài!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257821/hs37_roojan.jpg', quote: 'Học sử không còn chán!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs35_aq05x9.jpg', quote: 'Em rất thích game lịch sử!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs34_auewra.jpg', quote: 'Bài học sinh động lắm!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs31_nini1q.jpg', quote: 'Học sử thật thú vị!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257818/hs27_ddtfiv.jpg', quote: 'Giao diện rất đẹp!' }
+].forEach(item => { %>
   <div class="gallery-track-wrap" style="margin-top:1rem;">
     <div class="gallery-track track-right">
       <% [
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Học sử thật thú vị!' },
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Em rất thích game lịch sử!' },
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Bài học sinh động lắm!' },
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' },
-      { img: 'hs13.jpg', quote: 'Tài liệu phong phú!' },
-      { img: 'hs12.jpg', quote: 'Em thích học sử hơn rồi!' },
-      { img: 'hs11.jpg', quote: 'Timeline dễ nhớ hơn!' },
-      { img: 'hs10.jpg', quote: 'Chatbot giải đáp nhanh!' },
-      { img: 'hs9.jpg', quote: 'Học sử không còn chán!' },
-      { img: 'hs23.jpg', quote: 'Mindmap giúp em nhớ bài!' },
-      { img: 'hs22.jpg', quote: 'Em thích game lịch sử!' },
-      { img: 'hs21.jpg', quote: 'Học sử vui hơn rồi!' },
-      { img: 'hs20.jpg', quote: 'Website rất hay!' },
-      { img: 'hs19.jpg', quote: 'Em hiểu bài nhanh hơn!' },
-      { img: 'hs18.jpg', quote: 'Bài học sinh động hơn!' },
-      { img: 'hs17.jpg', quote: 'Dùng điện thoại cũng được!' },
-      { img: 'hs16.jpg', quote: 'Em học được rất nhiều!' },
-      { img: 'hs15.jpg', quote: 'Giao diện rất đẹp!' },
-      { img: 'hs14.jpg', quote: 'Quiz ôn bài rất hay!' },
-      { img: 'hs13.jpg', quote: 'Tài liệu phong phú!' },
-      { img: 'hs12.jpg', quote: 'Em thích học sử hơn rồi!' },
-      { img: 'hs11.jpg', quote: 'Timeline dễ nhớ hơn!' },
-      { img: 'hs10.jpg', quote: 'Chatbot giải đáp nhanh!' },
-      { img: 'hs9.jpg', quote: 'Học sử không còn chán!' },
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Học sử thật thú vị!' },
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Em rất thích game lịch sử!' },
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Bài học sinh động lắm!' },
-      { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' }
-     ].forEach(item => { %>
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Tài liệu phong phú!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Chatbot giải đáp nhanh!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Quiz ôn bài rất hay!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257818/hs28_o4jhdt.jpg', quote: 'Em thích học sử hơn rồi!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257818/hs26_szc5pp.jpg', quote: 'Timeline dễ nhớ hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257818/hs22_bww04c.jpg', quote: 'Học sử vui hơn rồi!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257817/hs24_rjknmq.jpg', quote: 'Em hiểu bài nhanh hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257817/hs23_x54hwt.jpg', quote: 'Mindmap giúp em nhớ bài!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257817/hs20_itisjp.jpg', quote: 'Website rất hay!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257817/hs21_qwtoxl.jpg', quote: 'Bài học sinh động hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257816/hs19_lykugu.jpg', quote: 'Em học được rất nhiều!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257816/hs18_deotqi.jpg', quote: 'Dùng điện thoại cũng được!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257816/hs17_kczf8n.jpg', quote: 'Em thích game lịch sử!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257816/hs9_ny7yau.jpg', quote: 'Học sử không còn chán!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257816/hs16_vruiaa.jpg', quote: 'Giao diện rất đẹp!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257816/hs15_aeqwzc.jpg', quote: 'Quiz ôn bài rất hay!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257816/hs14_iqpuoa.jpg', quote: 'Chatbot giải đáp nhanh!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257815/hs13_nv6tbb.jpg', quote: 'Tài liệu phong phú!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257814/hs12_g3wtrh.jpg', quote: 'Timeline dễ nhớ hơn!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257814/hs6_gbjzax.jpg', quote: 'Học sử thật thú vị!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257814/hs5_dlpdi0.jpg', quote: 'Em rất thích game lịch sử!' },
+  { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257813/hs3_jz7oog.jpg', quote: 'Bài học sinh động lắm!' }
+].forEach(item => { %>
         <div class="gallery-item">
          <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
           <div class="gallery-hover-quote">"<%= item.quote %>"</div>
