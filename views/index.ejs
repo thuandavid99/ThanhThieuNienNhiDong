@@ -457,17 +457,9 @@
   </div>
 
   <!-- Băng chuyền ảnh hàng 1 - chạy phải -->
-  <div class="gallery-track-wrap">
-    <div class="gallery-track track-left">
-      
-        <div class="gallery-item">
-          <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
-          <div class="gallery-hover-quote">"<%= item.quote %>"</div>
-        </div>
-      <% }) %>
-    </div>
-  </div>
-   <% [
+<div class="gallery-track-wrap">
+  <div class="gallery-track track-left">
+    <% [
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257825/hs52_rcfhel.jpg', quote: 'Học sử thật thú vị!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257824/hs53_xyh2xz.jpg', quote: 'Chatbot giải đáp nhanh!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257824/hs48_mkhcxf.jpg', quote: 'Timeline dễ nhớ hơn!' },
@@ -489,10 +481,18 @@
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs36_v5zfxk.jpg', quote: 'Em hiểu bài nhanh hơn!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257820/hs31_nini1q.jpg', quote: 'Học sử thật thú vị!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257818/hs27_ddtfiv.jpg', quote: 'Giao diện rất đẹp!' }
-].forEach(item => { %>
-  <div class="gallery-track-wrap" style="margin-top:1rem;">
-    <div class="gallery-track track-right">
-      <% [
+    ].forEach(item => { %>
+      <div class="gallery-item">
+        <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
+        <div class="gallery-hover-quote">"<%= item.quote %>"</div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<div class="gallery-track-wrap" style="margin-top:1rem;">
+  <div class="gallery-track track-right">
+    <% [
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs32_wqxamx.jpg', quote: 'Tài liệu phong phú!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs30_nvci1k.jpg', quote: 'Chatbot giải đáp nhanh!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257819/hs29_gjsdih.jpg', quote: 'Quiz ôn bài rất hay!' },
@@ -515,15 +515,15 @@
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257814/hs6_gbjzax.jpg', quote: 'Học sử thật thú vị!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257814/hs5_dlpdi0.jpg', quote: 'Em rất thích game lịch sử!' },
   { img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776257813/hs3_jz7oog.jpg', quote: 'Bài học sinh động lắm!' }
-].forEach(item => { %>
-        <div class="gallery-item">
-         <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
-          <div class="gallery-hover-quote">"<%= item.quote %>"</div>
-        </div>
-      <% }) %>
-    </div>
+    ].forEach(item => { %>
+      <div class="gallery-item">
+        <img src="<%= item.img.startsWith('http') ? item.img : '/images/community/' + item.img %>" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
+        <div class="gallery-hover-quote">"<%= item.quote %>"</div>
+      </div>
+    <% }) %>
   </div>
-
+</div>
+  
   <!-- Review cards -->
   <div class="container" style="margin-top:3rem;">
     <div class="review-carousel" id="reviewCarousel">
