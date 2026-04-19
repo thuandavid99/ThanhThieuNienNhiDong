@@ -34,7 +34,7 @@ module.exports = {
     { step: '', title: 'Luyện quiz', description: ' Củng cố bằng câu hỏi nhanh và mini game.' }
   ],
   timeline: [
-    { year: '40',   title: 'Hai Bà Trưng khởi nghĩa', description: 'Trưng Trắc và Trưng Nhị phất cờ khởi nghĩa, xưng vương ở Mê Linh.', icon: '⚡' },
+    { year: '40', title: 'Hai Bà Trưng khởi nghĩa', description: 'Trưng Trắc và Trưng Nhị phất cờ khởi nghĩa, xưng vương ở Mê Linh.', icon: '⚡', img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776558812/5db3deb4-d212-4fbf-8a16-08eb4f074478_gic0f0.jpg' },
     { year: '938',  title: 'Chiến thắng Bạch Đằng', description: 'Ngô Quyền đánh bại quân Nam Hán, mở ra thời kỳ độc lập lâu dài.', icon: '⚔️' },
     { year: '1010', title: 'Dời đô ra Thăng Long', description: 'Lý Công Uẩn mở đầu thời kỳ phát triển mới của quốc gia Đại Việt.', icon: '🏯' },
     { year: '1288', title: 'Bạch Đằng thời Trần', description: 'Nhà Trần đánh tan quân Nguyên Mông lần ba, giữ vững độc lập.', icon: '🛡️' },
