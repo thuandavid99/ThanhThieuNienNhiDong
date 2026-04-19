@@ -35,14 +35,14 @@ module.exports = {
   ],
   timeline: [
     { year: '40', title: 'Hai Bà Trưng khởi nghĩa', description: 'Trưng Trắc và Trưng Nhị phất cờ khởi nghĩa, xưng vương ở Mê Linh.', icon: '⚡', img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776558812/5db3deb4-d212-4fbf-8a16-08eb4f074478_gic0f0.jpg' },
-    { year: '938',  title: 'Chiến thắng Bạch Đằng', description: 'Ngô Quyền đánh bại quân Nam Hán, mở ra thời kỳ độc lập lâu dài.', icon: '⚔️' },
-    { year: '1010', title: 'Dời đô ra Thăng Long', description: 'Lý Công Uẩn mở đầu thời kỳ phát triển mới của quốc gia Đại Việt.', icon: '🏯' },
-    { year: '1288', title: 'Bạch Đằng thời Trần', description: 'Nhà Trần đánh tan quân Nguyên Mông lần ba, giữ vững độc lập.', icon: '🛡️' },
-    { year: '1428', title: 'Lê Lợi lên ngôi', description: 'Sau 10 năm kháng chiến, đuổi quân Minh, lập nhà Hậu Lê hưng thịnh.', icon: '👑' },
-    { year: '1789', title: 'Quang Trung đại phá quân Thanh', description: '5 ngày Tết Kỷ Dậu, đại phá 29 vạn quân Thanh tại Đống Đa.', icon: '⚡' },
-    { year: '1945', title: 'Cách mạng tháng Tám', description: 'Bác Hồ đọc Tuyên ngôn Độc lập 2/9, khai sinh nước VNDCCH.', icon: '⭐' },
-    { year: '1954', title: 'Điện Biên Phủ', description: '56 ngày đêm chiến đấu anh dũng, đập tan cứ điểm bất khả xâm phạm.', icon: '🚩' },
-    { year: '1975', title: 'Giải phóng miền Nam', description: 'Đất nước thống nhất sau Chiến dịch Hồ Chí Minh lịch sử.', icon: '🇻🇳' }
+    { year: '938',  title: 'Chiến thắng Bạch Đằng', description: 'Ngô Quyền đánh bại quân Nam Hán, mở ra thời kỳ độc lập lâu dài.', icon: '⚔️', img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559921/images_lcyxjx.jpg' },
+    { year: '1010', title: 'Dời đô ra Thăng Long', description: 'Lý Công Uẩn mở đầu thời kỳ phát triển mới của quốc gia Đại Việt.', icon: '🏯', img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559922/vua_ly_thai_to_vanhien.vn_xqtomq.jpg' },
+    { year: '1288', title: 'Bạch Đằng thời Trần', description: 'Nhà Trần đánh tan quân Nguyên Mông lần ba, giữ vững độc lập.', icon: '🛡️' , img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559920/images_1_muvxxm.jpg'},
+    { year: '1428', title: 'Lê Lợi lên ngôi', description: 'Sau 10 năm kháng chiến, đuổi quân Minh, lập nhà Hậu Lê hưng thịnh.', icon: '👑' , img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559920/images_2_giawyl.jpg'},
+    { year: '1789', title: 'Quang Trung đại phá quân Thanh', description: '5 ngày Tết Kỷ Dậu, đại phá 29 vạn quân Thanh tại Đống Đa.', icon: '⚡' , img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559920/quang-trung-dai-pha-quan-thanh-1789-1_rbitst.png'},
+    { year: '1945', title: 'Cách mạng tháng Tám', description: 'Bác Hồ đọc Tuyên ngôn Độc lập 2/9, khai sinh nước VNDCCH.', icon: '⭐', img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559920/16-37-16-29-07-2025-anh-2_1_ldxuys.jpg' },
+    { year: '1954', title: 'Điện Biên Phủ', description: '56 ngày đêm chiến đấu anh dũng, đập tan cứ điểm bất khả xâm phạm.', icon: '🚩' , img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559920/Victory_in_Battle_of_Dien_Bien_Phu_gifsb4.jpg'},
+    { year: '1975', title: 'Giải phóng miền Nam', description: 'Đất nước thống nhất sau Chiến dịch Hồ Chí Minh lịch sử.', icon: '🇻🇳', img: 'https://res.cloudinary.com/drg0ikfcu/image/upload/v1776559919/images_kifczh.webp'}
   ],
   games: [
     { name: 'Điện Biên Phủ 1954', type: 'Adventure Game', badge: 'MỚI', href: '/games/dien-bien-phu', emoji: '🪖', description: 'Trải nghiệm 3 cấp độ: kéo pháo, đào chiến hào và cắm cờ chiến thắng. Kèm quiz 6 câu và hệ thống điểm.', detail: 'Phù hợp lớp 6-9 · ~15 phút · Có cảm ứng mobile' },
